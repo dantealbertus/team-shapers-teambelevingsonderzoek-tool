@@ -1558,35 +1558,40 @@ function openShareModalFor(teamId){
 function createShareLink(){
   var pwd=document.getElementById('share-pwd').value.trim();if(!pwd)return;
   var shareId=uid();
-  if(!db.sharedReports)db.sharedReports={};
-  db.sharedReports[shareId]={teamId:shareTeamId,password:pwd};
-  saveDB(db);
-  var link=location.origin+location.pathname+'?share='+shareId;
-  var box=document.getElementById('share-link-box');
-  box.textContent=link;
-  box.onclick=function(){navigator.clipboard.writeText(link).catch(function(){});box.textContent='Gekopieerd!';setTimeout(function(){box.textContent=link;},2000);};
-  document.getElementById('share-link-result').style.display='block';
+  var teamId=shareTeamId,org=null,team=null;
+  db.organisations.forEach(function(o){(o.teams||[]).forEach(function(t){if(t.id===teamId){org=o;team=t;}});});
+  var report=db.reports&&db.reports[teamId];
+  if(!report||!team){alert('Rapport niet gevonden.');return;}
+  fetch('/api/shared-reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:shareId,password:pwd,reportData:{org:org,team:team,report:report}})})
+    .then(function(r){return r.json();})
+    .then(function(){
+      var link=location.origin+location.pathname+'?share='+shareId;
+      var box=document.getElementById('share-link-box');
+      box.textContent=link;
+      box.onclick=function(){navigator.clipboard.writeText(link).catch(function(){});box.textContent='Gekopieerd!';setTimeout(function(){box.textContent=link;},2000);};
+      document.getElementById('share-link-result').style.display='block';
+    })
+    .catch(function(){alert('Fout bij aanmaken link.');});
 }
 var pendingShareId=null;
 function checkShareParam(){
   var params=new URLSearchParams(location.search);
   var shareId=params.get('share');if(!shareId)return;
-  db=loadDB();
-  var sr=db.sharedReports&&db.sharedReports[shareId];if(!sr)return;
   pendingShareId=shareId;showView('shared-report');
 }
 function submitSharePwd(){
-  db=loadDB();
-  var sr=db.sharedReports&&db.sharedReports[pendingShareId];
   var pwd=document.getElementById('share-pwd-input').value;
-  if(!sr||pwd!==sr.password){document.getElementById('share-pwd-error').style.display='block';return;}
-  document.getElementById('share-pwd-error').style.display='none';
-  var teamId=sr.teamId,org=null,team=null;
-  db.organisations.forEach(function(o){(o.teams||[]).forEach(function(t){if(t.id===teamId){org=o;team=t;}});});
-  var report=db.reports&&db.reports[teamId];if(!report||!team)return;
-  document.getElementById('shared-login-wrap').style.display='none';
-  document.getElementById('shared-report-content').style.display='block';
-  document.getElementById('shared-report-frame').innerHTML=buildReport(org,team,report,true);
+  fetch('/api/reports/shared/'+pendingShareId+'?pwd='+encodeURIComponent(pwd))
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.error){document.getElementById('share-pwd-error').style.display='block';return;}
+      document.getElementById('share-pwd-error').style.display='none';
+      var d=data.data;
+      document.getElementById('shared-login-wrap').style.display='none';
+      document.getElementById('shared-report-content').style.display='block';
+      document.getElementById('shared-report-frame').innerHTML=buildReport(d.org,d.team,d.report,true);
+    })
+    .catch(function(){document.getElementById('share-pwd-error').style.display='block';});
 }
 
 // PARTICIPANT
