@@ -508,6 +508,26 @@ app.delete('/api/admin/knowledge/:id', adminAuth, async (req, res) => {
   }
 });
 
+// ── SHARED REPORTS (create)
+app.post('/api/shared-reports', async (req, res) => {
+  try {
+    const { token, password, reportData } = req.body;
+    const reportId = Math.random().toString(36).slice(2, 10).toUpperCase();
+    const passwordHash = await bcrypt.hash(password, 10);
+    await pool.query(
+      `INSERT INTO reports (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data=$2`,
+      [reportId, JSON.stringify(reportData)]
+    );
+    await pool.query(
+      `INSERT INTO shared_reports (token, report_id, password_hash) VALUES ($1, $2, $3) ON CONFLICT (token) DO UPDATE SET report_id=$2, password_hash=$3`,
+      [token, reportId, passwordHash]
+    );
+    res.json({ ok: true, token });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── SHARED REPORTS ────────────────────────────────────────────────────
 app.get('/api/reports/shared/:token', async (req, res) => {
   try {
