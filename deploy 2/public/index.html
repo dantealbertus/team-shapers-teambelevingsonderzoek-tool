@@ -1209,7 +1209,7 @@ async function generateReport(){
       'Team: '+team.name+' ('+org.name+'), deelnemers: '+ps.length+'\n\n'+themeLines+'\n\n'+
       'Geef ALLEEN een JSON object terug, geen markdown:\n'+
       '{'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"lopende alinea"';}).join(',')+'}';
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:2000})});
     var data=await resp.json();
     var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
     var m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1291,7 +1291,7 @@ async function generateAiAdviceFromScores(tAvgs,qScores,activeQs,label,count,ton
       'Geef ALLEEN een JSON object terug, geen markdown. Gebruik exact deze keys:\n'+
       '{'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"advies"';}).join(',')+'}'+'\n\n'+
       'Toon: >=7.5 bevestigen, 6-7.4 groeiruimte, <6 urgent.';
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:2000})});
     var data=await resp.json();
     var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
     var jsonMatch=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1394,7 +1394,7 @@ async function regenAdvice(theme,customPrompt){
     (customPrompt?'Aanvullende instructie: '+customPrompt+'\n\n':'')+
     'Geef ALLEEN de adviestekst terug (geen JSON, geen headers), 2-4 zinnen in wij-vorm.';
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});
+    var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:500})});
     var data=await resp.json();
     var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'';
     report.aiAdvice[theme]=txt.trim();
@@ -1737,7 +1737,7 @@ async function autoGenerateIndividualReport(pid){
         'Structuur per thema:\n1. Constatering (ik-vorm): wat zeggen de scores over deze persoon.\n2. Advies van Team Shapers (algemene schrijfstijl, geen ik/wij): concreet handelingsperspectief.\n\n'+
         'Deelnemer: '+foundP.name+', team: '+foundTeam.name+'\n\n'+themeLines+'\n\n'+
         'Geef ALLEEN JSON: {'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"advies"';}).join(',')+'}'+'\n\nToon: >=7.5 positief, 6-7.4 groei, <6 urgent.';
-      var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+      var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:1500})});
       var data=await resp.json();
       var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
       var m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
@@ -1786,7 +1786,7 @@ async function autoGenerateTeamReportIfComplete(pid){
       var prompt='Je bent expert in teamontwikkeling bij Team Shapers. Genereer voor elk thema een concreet advies (2 delen: wij-vorm constatering + algemeen Team Shapers advies).\n\n'+
         'Team: '+foundTeam.name+' ('+foundOrg.name+'), deelnemers: '+completedPs.length+'\n\n'+themeLines+'\n\n'+
         'Geef ALLEEN JSON: {'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"advies"';}).join(',')+'}'+'\n\nToon: >=7.5 bevestigen, 6-7.4 groei, <6 urgent.';
-      var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+      var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:2000})});
       var data=await resp.json();
       var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
       var m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
