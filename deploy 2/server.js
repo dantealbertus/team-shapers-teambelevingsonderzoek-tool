@@ -131,11 +131,13 @@ function adminAuth(req, res, next) {
 // ── AUTH ENDPOINTS ────────────────────────────────────────────────────
 app.post('/api/admin/login', async (req, res) => {
   try {
-    const { password } = req.body;
+    const { username, password } = req.body;
+    const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
+    if (username !== expectedUsername) return res.status(401).json({ error: 'Onjuiste inloggegevens' });
     const result = await pool.query("SELECT value FROM settings WHERE key = 'admin_password'");
-    const hash = JSON.parse(result.rows[0].value);
+    const hash = result.rows[0].value;
     const ok = await bcrypt.compare(password, hash);
-    if (!ok) return res.status(401).json({ error: 'Ongeldig wachtwoord' });
+    if (!ok) return res.status(401).json({ error: 'Onjuiste inloggegevens' });
     res.json({ token: process.env.ADMIN_SESSION_TOKEN || 'dev-token' });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -343,6 +345,21 @@ app.post('/api/admin/questions', adminAuth, async (req, res) => {
   }
 });
 
+app.put('/api/admin/questions/reorder', adminAuth, async (req, res) => {
+  try {
+    const { order } = req.body;
+    for (const item of order) {
+      await pool.query(
+        'UPDATE questions SET sort_order=$1, theme=$2 WHERE id=$3',
+        [item.sortOrder, item.theme, item.id]
+      );
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.put('/api/admin/questions/:id', adminAuth, async (req, res) => {
   try {
     const { theme, text, active } = req.body;
@@ -359,21 +376,6 @@ app.put('/api/admin/questions/:id', adminAuth, async (req, res) => {
 app.delete('/api/admin/questions/:id', adminAuth, async (req, res) => {
   try {
     await pool.query('DELETE FROM questions WHERE id = $1', [req.params.id]);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-app.put('/api/admin/questions/reorder', adminAuth, async (req, res) => {
-  try {
-    const { order } = req.body;
-    for (const item of order) {
-      await pool.query(
-        'UPDATE questions SET sort_order=$1, theme=$2 WHERE id=$3',
-        [item.sortOrder, item.theme, item.id]
-      );
-    }
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
