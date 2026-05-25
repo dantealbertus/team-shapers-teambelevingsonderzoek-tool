@@ -662,7 +662,7 @@ function injectLogos(){
   
 }
 
-var adminToken=null;
+var adminToken=sessionStorage.getItem('adminToken')||null;
 var db={organisations:[],questions:[],themes:[],answers:{},reports:{},knowledgeBase:[]};
 function uid(){return Math.random().toString(36).substr(2,9);}
 function genCode(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='TBQ-';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
@@ -700,12 +700,13 @@ async function adminLogin(){
     if(!res.ok){err.style.display='block';return;}
     var data=await res.json();
     adminToken=data.token;
+    sessionStorage.setItem('adminToken',adminToken);
     err.style.display='none';
     await loadAdminData();
     showView('admin');renderAdmin();
   }catch(e){err.style.display='block';}
 }
-function adminLogout(){adminToken=null;db={organisations:[],questions:[],themes:[],answers:{},reports:{},knowledgeBase:[]};showView('landing');}
+function adminLogout(){adminToken=null;sessionStorage.removeItem('adminToken');db={organisations:[],questions:[],themes:[],answers:{},reports:{},knowledgeBase:[]};showView('landing');}
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')adminLogin();});
 
 function adminTab(tab){
@@ -2379,6 +2380,17 @@ checkShareParam();
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
   document.getElementById('p-code').value=code.trim().toUpperCase();
   participantLogin();
+})();
+
+// Auto-restore admin session on page refresh
+(async function restoreAdminSession(){
+  if(!adminToken)return;
+  try{
+    await loadAdminData();
+    showView('admin');renderAdmin();
+  }catch(e){
+    adminToken=null;sessionStorage.removeItem('adminToken');
+  }
 })();
 </script>
 </body>
