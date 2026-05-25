@@ -229,6 +229,11 @@ app.get('/api/admin/organisations', adminAuth, async (req, res) => {
     const orgs = await pool.query('SELECT * FROM organisations ORDER BY created_at');
     const teams = await pool.query('SELECT * FROM teams ORDER BY created_at');
     const participants = await pool.query('SELECT * FROM participants ORDER BY created_at');
+    const answerCounts = await pool.query(
+      'SELECT participant_id, COUNT(*) as count FROM answers GROUP BY participant_id'
+    );
+    const countMap = {};
+    answerCounts.rows.forEach(r => { countMap[r.participant_id] = parseInt(r.count); });
 
     const result = orgs.rows.map(org => ({
       ...org,
@@ -245,7 +250,8 @@ app.get('/api/admin/organisations', adminAuth, async (req, res) => {
             code: p.code,
             loggedIn: p.logged_in,
             completed: p.completed,
-            completedAt: p.completed_at
+            completedAt: p.completed_at,
+            answerCount: countMap[p.id] || 0
           }))
         }))
     }));

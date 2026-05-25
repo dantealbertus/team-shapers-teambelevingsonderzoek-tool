@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(new URLSearchParams(location.search).get('code')){document.documentElement.style.visibility='hidden';}</script>
 <title>TeamBelevingsonderzoek   Team Shapers</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -760,8 +761,7 @@ function renderDashboard(){
   if(!all.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--gray-mid)">Nog geen deelnemers</td></tr>';return;}
   var activeQs=db.questions.filter(function(q){return q.active;});
   tbody.innerHTML=all.slice(0,20).map(function(p){
-    var ans=db.answers[p.id]||{};
-    var prog=activeQs.length?Math.round(Object.keys(ans).length/activeQs.length*100):0;
+    var prog=p.completed?100:activeQs.length?Math.round((p.answerCount||0)/activeQs.length*100):0;
     var badge=p.completed?'<span class="badge badge-green">Afgerond</span>':p.loggedIn?'<span class="badge badge-yellow">Bezig ('+prog+'%)</span>':'<span class="badge badge-gray">Niet gestart</span>';
     var pName=p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
     return '<tr><td><strong>'+pName+'</strong>'+(p.email?'<br><span style="font-size:11px;color:var(--gray-mid)">'+p.email+'</span>':'')+'</td>'+
@@ -797,8 +797,7 @@ function renderTeamBlock(org,team){
   var activeQs=db.questions.filter(function(q){return q.active;});
   var report=db.reports&&db.reports[team.id];
   var rows=ps.map(function(p){
-    var ans=db.answers[p.id]||{};
-    var prog=activeQs.length?Math.round(Object.keys(ans).length/activeQs.length*100):0;
+    var prog=p.completed?100:activeQs.length?Math.round((p.answerCount||0)/activeQs.length*100):0;
     var badge=p.completed?'<span class="badge badge-green">Afgerond</span>':p.loggedIn?'<span class="badge badge-yellow">Bezig</span>':'<span class="badge badge-gray">Niet gestart</span>';
     var actBtns='';
     if(p.completed){
@@ -1602,7 +1601,7 @@ async function participantLogin(){
     var res=await fetch('/api/participant/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})});
     var data=await res.json();
     if(!res.ok){
-      // If already completed, show the complete screen
+      document.documentElement.style.visibility='';
       if(res.status===400&&data.error&&data.error.includes('al ingevuld')){
         err.style.display='none';
         showView('survey');
@@ -1611,6 +1610,7 @@ async function participantLogin(){
         document.getElementById('survey-complete').style.display='';
         return;
       }
+      showView('landing');
       err.style.display='block';return;
     }
     var p=data;
@@ -1623,12 +1623,13 @@ async function participantLogin(){
     db.answers=db.answers||{};
     db.answers[p.id]=db.answers[p.id]||{};
     document.getElementById('intro-welcome').textContent='Welkom, '+(p.firstName||p.name)+'!';
+    document.documentElement.style.visibility='';
     showView('survey');
     document.getElementById('survey-intro').style.display='';
     document.getElementById('survey-question').style.display='none';
     document.getElementById('survey-complete').style.display='none';
     updateProgress();
-  }catch(e){err.style.display='block';}
+  }catch(e){document.documentElement.style.visibility='';showView('landing');err.style.display='block';}
 }
 document.getElementById('p-code').addEventListener('keydown',function(e){if(e.key==='Enter')participantLogin();});
 
