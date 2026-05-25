@@ -177,7 +177,10 @@ app.post('/api/participant/login', async (req, res) => {
 app.get('/api/questions', async (req, res) => {
   try {
     const qs = await pool.query(
-      'SELECT * FROM questions WHERE active = TRUE ORDER BY sort_order, created_at'
+      `SELECT q.* FROM questions q
+       JOIN themes t ON q.theme = t.name
+       WHERE q.active = TRUE
+       ORDER BY t.sort_order, q.sort_order, q.created_at`
     );
     const themes = await pool.query('SELECT name FROM themes ORDER BY sort_order');
     res.json({
@@ -319,7 +322,11 @@ app.delete('/api/admin/participants/:id', adminAuth, async (req, res) => {
 // ── ADMIN: QUESTIONS ─────────────────────────────────────────────────
 app.get('/api/admin/questions', adminAuth, async (req, res) => {
   try {
-    const qs = await pool.query('SELECT * FROM questions ORDER BY sort_order, created_at');
+    const qs = await pool.query(
+      `SELECT q.* FROM questions q
+       JOIN themes t ON q.theme = t.name
+       ORDER BY t.sort_order, q.sort_order, q.created_at`
+    );
     const themes = await pool.query('SELECT name FROM themes ORDER BY sort_order');
     res.json({
       questions: qs.rows,
