@@ -629,7 +629,21 @@ app.post('/api/ai/advice', async (req, res) => {
 app.get('/api/admin/reports', adminAuth, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM reports ORDER BY generated_at DESC');
-    res.json(result.rows);
+    // The full report object is stored in the `data` column. Return it at the top
+    // level (with the metadata columns) so the frontend reads tAvgs/qScores/etc directly.
+    const reports = result.rows.map(row => {
+      const d = (row.data && typeof row.data === 'object') ? row.data : {};
+      return Object.assign({}, d, {
+        id: row.id,
+        teamId: d.teamId || row.team_id || undefined,
+        orgId: d.orgId || row.org_id || undefined,
+        isIndividual: d.isIndividual || row.is_individual || false,
+        participantId: d.participantId || row.participant_id || undefined,
+        participantName: d.participantName || row.participant_name || undefined,
+        generatedAt: d.generatedAt || row.generated_at
+      });
+    });
+    res.json(reports);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -637,12 +651,18 @@ app.get('/api/admin/reports', adminAuth, async (req, res) => {
 
 app.post('/api/admin/reports', adminAuth, async (req, res) => {
   try {
-    const { id, teamId, orgId, isIndividual, participantId, participantName, data } = req.body;
+    // The frontend posts the full report object directly (tAvgs, qScores, dimensions, …).
+    // Store the whole object in `data`, and mirror the key fields into columns for querying.
+    const r = req.body || {};
+    if (!r.id) return res.status(400).json({ error: 'id ontbreekt' });
     await pool.query(
       `INSERT INTO reports (id, team_id, org_id, is_individual, participant_id, participant_name, data)
        VALUES ($1,$2,$3,$4,$5,$6,$7)
-       ON CONFLICT (id) DO UPDATE SET data=$7, generated_at=NOW()`,
-      [id, teamId, orgId, isIndividual || false, participantId || null, participantName || null, JSON.stringify(data)]
+       ON CONFLICT (id) DO UPDATE SET
+         data=$7, team_id=$2, org_id=$3, is_individual=$4,
+         participant_id=$5, participant_name=$6, generated_at=NOW()`,
+      [r.id, r.teamId || null, r.orgId || null, r.isIndividual || false,
+       r.participantId || null, r.participantName || null, JSON.stringify(r)]
     );
     res.json({ ok: true });
   } catch (e) {
