@@ -73,6 +73,12 @@ async function initDB() {
       sort_order INTEGER DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS dimensions (
+      name TEXT PRIMARY KEY,
+      description TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0
+    );
+
     CREATE TABLE IF NOT EXISTS reports (
       id TEXT PRIMARY KEY,
       team_id TEXT,
@@ -98,6 +104,33 @@ async function initDB() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+
+  // ── MIGRATIONS (additive, safe to run repeatedly) ───────────────────
+  await pool.query("ALTER TABLE organisations ADD COLUMN IF NOT EXISTS is_leads BOOLEAN DEFAULT FALSE");
+  await pool.query("ALTER TABLE themes ADD COLUMN IF NOT EXISTS dimension TEXT");
+
+  // Seed default dimensions + theme→dimension mapping (only on first run)
+  const dimCount = await pool.query('SELECT COUNT(*) as c FROM dimensions');
+  if (parseInt(dimCount.rows[0].c) === 0) {
+    const defaults = [
+      { name: 'Bestaansrecht', desc: 'Het bestaansrecht van een team is de reden dat ze op aarde zijn. Een team zet doelen om in resultaten.', themes: ['Doelen', 'Resultaten'] },
+      { name: 'Inrichting', desc: 'Inrichting is de manier waarop je menselijk kapitaal inzet, procedures structureert en ondersteunende processen inricht.', themes: ['De mensen', 'Overleg'] },
+      { name: 'Dynamiek', desc: 'In de dynamiek komt de samenwerking tot leven. Hier spelen persoonlijke behoefte en groepsbelang een rol.', themes: ['Samenwerken', 'Communicatie', 'Omgang met elkaar', 'Besluitvorming', 'Teamleider'] },
+      { name: 'Omgeving', desc: 'Als team lever je een dienst aan je omgeving. Tegelijkertijd heb je de omgeving nodig voor resources en als samenwerkingspartner.', themes: ["Collega's van andere teams", 'Krachtenveld'] }
+    ];
+    for (let i = 0; i < defaults.length; i++) {
+      const d = defaults[i];
+      await pool.query('INSERT INTO dimensions (name, description, sort_order) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING', [d.name, d.desc, i + 1]);
+      for (const t of d.themes) {
+        await pool.query('UPDATE themes SET dimension = $1 WHERE name = $2', [d.name, t]);
+      }
+    }
+  }
+
+  // Ensure the special Leads organisation exists
+  await pool.query(
+    "INSERT INTO organisations (id, name, is_leads) VALUES ('LEADS', 'Leads', TRUE) ON CONFLICT (id) DO UPDATE SET is_leads = TRUE"
+  );
 
   const existing = await pool.query("SELECT value FROM settings WHERE key = 'admin_password'");
   if (existing.rows.length === 0) {
@@ -251,6 +284,7 @@ app.get('/api/admin/organisations', adminAuth, async (req, res) => {
             loggedIn: p.logged_in,
             completed: p.completed,
             completedAt: p.completed_at,
+            createdAt: p.created_at,
             answerCount: countMap[p.id] || 0
           }))
         }))
@@ -333,10 +367,15 @@ app.get('/api/admin/questions', adminAuth, async (req, res) => {
        JOIN themes t ON q.theme = t.name
        ORDER BY t.sort_order, q.sort_order, q.created_at`
     );
-    const themes = await pool.query('SELECT name FROM themes ORDER BY sort_order');
+    const themes = await pool.query('SELECT name, dimension FROM themes ORDER BY sort_order');
+    const dims = await pool.query('SELECT name, description, sort_order FROM dimensions ORDER BY sort_order');
+    const themeDim = {};
+    themes.rows.forEach(t => { themeDim[t.name] = t.dimension || null; });
     res.json({
       questions: qs.rows,
-      themes: themes.rows.map(t => t.name)
+      themes: themes.rows.map(t => t.name),
+      themeDim: themeDim,
+      dimensions: dims.rows.map(d => ({ name: d.name, description: d.description || '', sortOrder: d.sort_order }))
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -397,11 +436,11 @@ app.delete('/api/admin/questions/:id', adminAuth, async (req, res) => {
 
 app.post('/api/admin/themes', adminAuth, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, dimension } = req.body;
     const max = await pool.query('SELECT COALESCE(MAX(sort_order),0) as m FROM themes');
     await pool.query(
-      'INSERT INTO themes (name, sort_order) VALUES ($1,$2) ON CONFLICT DO NOTHING',
-      [name, (max.rows[0].m || 0) + 1]
+      'INSERT INTO themes (name, sort_order, dimension) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING',
+      [name, (max.rows[0].m || 0) + 1, dimension || null]
     );
     res.json({ ok: true });
   } catch (e) {
@@ -415,6 +454,133 @@ app.delete('/api/admin/themes/:name', adminAuth, async (req, res) => {
     await pool.query('DELETE FROM themes WHERE name = $1', [name]);
     await pool.query('DELETE FROM questions WHERE theme = $1', [name]);
     res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Rename a theme and/or (re)assign its dimension. Cascades the new name to questions.
+app.put('/api/admin/themes/:name', adminAuth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const oldName = decodeURIComponent(req.params.name);
+    const { name, dimension } = req.body;
+    const newName = (name || '').trim() || oldName;
+    await client.query('BEGIN');
+    if (newName !== oldName) {
+      const exists = await client.query('SELECT 1 FROM themes WHERE name = $1', [newName]);
+      if (exists.rows.length) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Er bestaat al een thema met deze naam.' });
+      }
+      await client.query('UPDATE themes SET name = $1 WHERE name = $2', [newName, oldName]);
+      await client.query('UPDATE questions SET theme = $1 WHERE theme = $2', [newName, oldName]);
+    }
+    await client.query('UPDATE themes SET dimension = $1 WHERE name = $2', [dimension || null, newName]);
+    await client.query('COMMIT');
+    res.json({ ok: true, name: newName });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
+  }
+});
+
+// ── ADMIN: DIMENSIONS ─────────────────────────────────────────────────
+app.post('/api/admin/dimensions', adminAuth, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'Naam is verplicht.' });
+    const max = await pool.query('SELECT COALESCE(MAX(sort_order),0) as m FROM dimensions');
+    await pool.query(
+      'INSERT INTO dimensions (name, description, sort_order) VALUES ($1,$2,$3) ON CONFLICT (name) DO NOTHING',
+      [name.trim(), description || '', (max.rows[0].m || 0) + 1]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Reorder dimensions (must be registered before the /:name route)
+app.put('/api/admin/dimensions/reorder', adminAuth, async (req, res) => {
+  try {
+    const { order } = req.body; // array of dimension names in the desired order
+    for (let i = 0; i < order.length; i++) {
+      await pool.query('UPDATE dimensions SET sort_order = $1 WHERE name = $2', [i + 1, order[i]]);
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Rename a dimension and/or update its description. Cascades the new name to themes.
+app.put('/api/admin/dimensions/:name', adminAuth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const oldName = decodeURIComponent(req.params.name);
+    const { name, description } = req.body;
+    const newName = (name || '').trim() || oldName;
+    await client.query('BEGIN');
+    if (newName !== oldName) {
+      const exists = await client.query('SELECT 1 FROM dimensions WHERE name = $1', [newName]);
+      if (exists.rows.length) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Er bestaat al een dimensie met deze naam.' });
+      }
+      await client.query('UPDATE dimensions SET name = $1 WHERE name = $2', [newName, oldName]);
+      await client.query('UPDATE themes SET dimension = $1 WHERE dimension = $2', [newName, oldName]);
+    }
+    await client.query('UPDATE dimensions SET description = $1 WHERE name = $2', [description || '', newName]);
+    await client.query('COMMIT');
+    res.json({ ok: true, name: newName });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: e.message });
+  } finally {
+    client.release();
+  }
+});
+
+app.delete('/api/admin/dimensions/:name', adminAuth, async (req, res) => {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    await pool.query('UPDATE themes SET dimension = NULL WHERE dimension = $1', [name]);
+    await pool.query('DELETE FROM dimensions WHERE name = $1', [name]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── LEADS (public self-registration) ──────────────────────────────────
+app.post('/api/lead/register', async (req, res) => {
+  try {
+    const { name, orgName } = req.body;
+    if (!name || !name.trim() || !orgName || !orgName.trim()) {
+      return res.status(400).json({ error: 'Vul je naam en organisatienaam in.' });
+    }
+    // Group leads by the organisation name they enter (a team under the Leads org)
+    let team = await pool.query(
+      "SELECT id FROM teams WHERE org_id = 'LEADS' AND LOWER(name) = LOWER($1)",
+      [orgName.trim()]
+    );
+    let teamId;
+    if (team.rows.length) {
+      teamId = team.rows[0].id;
+    } else {
+      teamId = uid();
+      await pool.query('INSERT INTO teams (id, org_id, name) VALUES ($1, $2, $3)', [teamId, 'LEADS', orgName.trim()]);
+    }
+    const id = uid();
+    const code = genCode();
+    await pool.query(
+      'INSERT INTO participants (id, team_id, first_name, code) VALUES ($1,$2,$3,$4)',
+      [id, teamId, name.trim(), code]
+    );
+    res.json({ code });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
