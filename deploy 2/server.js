@@ -17,6 +17,14 @@ const pool = new Pool({
     : false
 });
 
+// A dropped idle connection (managed Postgres closes idle clients) emits an
+// 'error' on the pool. Without this listener Node treats it as an unhandled
+// error event and crashes the whole process — the main cause of intermittent
+// "server not found" downtime. Log it and let the pool recover on next query.
+pool.on('error', (err) => {
+  console.error('Unexpected idle DB client error:', err.message);
+});
+
 async function initDB() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS settings (
@@ -603,6 +611,8 @@ app.get('/api/admin/answers/:participantId', adminAuth, async (req, res) => {
 
 // ── AI PROXY (server-side, keeps API key secret) ──────────────────────
 app.post('/api/ai/advice', async (req, res) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60000);
   try {
     const { prompt, max_tokens } = req.body;
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -616,12 +626,16 @@ app.post('/api/ai/advice', async (req, res) => {
         model: 'claude-sonnet-4-6',
         max_tokens: max_tokens || 2000,
         messages: [{ role: 'user', content: prompt }]
-      })
+      }),
+      signal: controller.signal
     });
     const data = await response.json();
     res.json(data);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    const msg = e.name === 'AbortError' ? 'AI request timed out' : e.message;
+    res.status(500).json({ error: msg });
+  } finally {
+    clearTimeout(timeout);
   }
 });
 
@@ -752,6 +766,15 @@ app.get('/api/reports/shared/:token', async (req, res) => {
 // ── CATCH-ALL: serve index.html ───────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Last-resort guards: log unexpected errors instead of letting a single
+// stray exception/rejection take the whole server down.
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err.stack || err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
 });
 
 // ── START ─────────────────────────────────────────────────────────────
