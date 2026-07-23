@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>if(new URLSearchParams(location.search).get('code')){document.documentElement.style.visibility='hidden';}</script>
-<title>TeamBelevingsonderzoek   Team Shapers</title>
+<title>Team APK   Team Shapers</title>
 <link rel="icon" type="image/png" href="/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -285,18 +285,22 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 .rpt-body{padding:32px 48px;}
 .rpt-section{margin-bottom:32px;}
 /* Theme section header: large score left, name right — like PDF */
-.rpt-theme-header{display:flex;align-items:flex-start;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--gray-border);}
+.rpt-theme-header{display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:26px;}
 .rpt-theme-score{font-size:40px;font-weight:700;line-height:1;flex-shrink:0;min-width:60px;}
-.rpt-theme-info h3{font-size:18px;font-weight:700;color:var(--black);margin-bottom:4px;}
-.rpt-theme-info p{font-size:12px;color:var(--gray-mid);line-height:1.5;}
+.rpt-theme-info h3{font-size:18px;font-weight:700;color:var(--black);margin-bottom:12px;}
+.rpt-theme-info p{font-size:13.5px;color:var(--gray-mid);line-height:1.55;}
 /* Dimensions overview */
 .rpt-dim-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-border);gap:12px;}
 .rpt-dim-row:last-child{border-bottom:none;}
 .rpt-dim-name{font-size:13px;color:var(--black);flex:1;font-family:var(--font);}
 .rpt-dim-right{display:flex;align-items:center;gap:10px;min-width:280px;}
 .rpt-spread-label{font-size:10px;color:var(--gray-mid);white-space:nowrap;font-family:var(--font);}
-.rpt-spread-bars{flex:1;height:6px;background:var(--gray-bg);border-radius:3px;overflow:hidden;display:flex;min-width:120px;}
-.rpt-spread-seg{height:100%;flex-shrink:0;}
+.rpt-spread-track{flex:1;height:20px;position:relative;min-width:120px;}
+.rpt-spread-base{position:absolute;top:50%;left:0;right:0;height:4px;transform:translateY(-50%);background:rgba(17,17,17,.06);border-radius:2px;}
+.rpt-spread-band{position:absolute;top:50%;height:10px;transform:translateY(-50%);border-radius:5px;opacity:.25;}
+.rpt-spread-ind{position:absolute;top:50%;transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;opacity:.22;}
+.rpt-spread-avg{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;border:2.5px solid white;}
+.rpt-score-num{width:40px;text-align:right;font-weight:800;font-size:14px;flex-shrink:0;font-family:var(--font);font-variant-numeric:tabular-nums;}
 .rpt-score-pill{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;font-family:var(--font);}
 .pill-green{background:var(--green-pale);color:var(--green);}
 .pill-yellow{background:var(--yellow-pale);color:#9A6B00;}
@@ -305,9 +309,9 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 .rpt-bar-wrap{flex:1;height:6px;background:var(--gray-bg);border-radius:3px;overflow:hidden;}
 .rpt-bar-fill{height:100%;border-radius:3px;}
 /* Q rows */
-.rpt-q-block{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:12px;}
-.rpt-q-block:last-of-type{border-bottom:none;}
-.rpt-q-label{font-size:12px;color:#333;flex:1;line-height:1.4;font-family:var(--font);}
+.rpt-q-block{display:flex;align-items:center;padding:9px 0;gap:12px;}
+.rpt-q-block + .rpt-q-block{border-top:1px solid rgba(17,17,17,.07);}
+.rpt-q-label{font-size:14px;color:#333;flex:1;line-height:1.45;font-family:var(--font);}
 .rpt-q-right{display:flex;align-items:center;gap:10px;min-width:220px;}
 .rpt-score-badge-sm{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;font-family:var(--font);}
 /* AI box */
@@ -329,10 +333,10 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 .regen-prompt-input{flex:1;border:1.5px solid var(--purple-pale);border-radius:8px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none;}
 .regen-prompt-input:focus{border-color:var(--purple);}
 
-.rpt-footer{background:white;padding:16px 44px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--gray-border);}
-.rpt-footer img{height:22px;opacity:.65;}
-.rpt-footer-meta{display:flex;gap:24px;align-items:center;}
-.rpt-footer-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gray-mid);font-family:var(--font);}
+.rpt-footer{background:var(--black);padding:20px 48px;display:flex;align-items:center;justify-content:space-between;}
+.rpt-footer img{height:22px;}
+.rpt-footer-meta{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+.rpt-footer-item{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5);font-family:var(--font);}
 .rpt-footer-item svg{width:14px;height:14px;flex-shrink:0;opacity:.6;}
 
 /* REPORTS LIST */
@@ -371,12 +375,12 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;}
 .sidebar-overlay.open{display:block;}
 
-@media (max-width:1024px){
+@media screen and (max-width:1024px){
   .stats-grid{grid-template-columns:repeat(2,1fr);}
   .modal-xl{width:calc(100vw - 40px);}
 }
 
-@media (max-width:768px){
+@media screen and (max-width:768px){
   /* Admin shell → slide-out drawer */
   .admin-mobile-topbar{display:flex;align-items:center;gap:12px;background:var(--black);padding:0 14px;height:54px;position:sticky;top:0;z-index:120;flex-shrink:0;}
   .admin-mobile-topbar img{height:22px;width:auto;}
@@ -433,7 +437,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   .rpt-theme-header{flex-direction:column;gap:6px;}
   .rpt-theme-score{font-size:32px;}
   .rpt-dim-right,.rpt-q-right{min-width:0;}
-  .rpt-spread-bars{min-width:70px;}
+  .rpt-spread-track{min-width:70px;}
   .rpt-footer{padding:14px 18px;flex-direction:column;gap:10px;text-align:center;}
   .rpt-footer-meta{flex-wrap:wrap;justify-content:center;gap:12px;}
 
@@ -443,7 +447,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   .team-btn-row{flex-wrap:wrap;}
 }
 
-@media (max-width:480px){
+@media screen and (max-width:480px){
   .stats-grid{grid-template-columns:1fr;}
   .likert-option{padding:11px 13px;font-size:13px;}
   .btn{padding:10px 16px;}
@@ -457,7 +461,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 <div id="view-landing" class="view active">
   <div class="landing-box">
     <div class="landing-logo"><img id="logo-landing" src="" alt="Team Shapers"></div>
-    <h2>TeamBelevingsonderzoek</h2>
+    <h2>Team APK</h2>
     <p style="color:var(--gray-mid);margin-bottom:28px">Beheerdersportaal</p>
     <button class="btn btn-primary btn-full" onclick="showView('admin-login')" style="padding:15px;font-size:15px;justify-content:center;border-radius:12px">Inloggen</button>
   </div>
@@ -535,20 +539,25 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 
     <div id="tab-leads" style="display:none">
       <div class="page-header">
-        <div><h1>Leads</h1><p>Verzamel leads via één deelbare link</p></div>
-        <button class="btn btn-primary" onclick="openLeadLinkModal()">Deelbare link</button>
+        <div><h1>Leads</h1><p>Verzamel leads via deelbare links</p></div>
+        <button class="btn btn-primary" onclick="openLeadLinkModal()">Nieuwe link</button>
       </div>
       <div class="stats-grid" id="leads-stats"></div>
       <div class="card">
+        <div class="card-header"><h3>Deelbare links</h3></div>
+        <table><thead><tr><th>Naam</th><th>Link</th><th>Klikken</th><th>Unieke bezoekers</th><th>Gestart</th><th>Afgerond</th><th>Conversie</th><th></th></tr></thead><tbody id="lead-links-tbody"></tbody></table>
+      </div>
+      <div class="card">
         <div class="card-header"><h3>Alle leads</h3></div>
-        <table><thead><tr><th>Naam</th><th>Organisatie</th><th>Status</th><th>Voortgang</th><th>Aangemaakt</th><th></th></tr></thead><tbody id="leads-tbody"></tbody></table>
+        <table><thead><tr><th>Naam</th><th>Organisatie</th><th>Via link</th><th>Status</th><th>Voortgang</th><th>Aangemaakt</th><th></th></tr></thead><tbody id="leads-tbody"></tbody></table>
       </div>
     </div>
 
     <div id="tab-questions" style="display:none">
       <div class="page-header">
-        <div><h1>Vragenlijst</h1><p>Beheer vragen en thema's</p></div>
+        <div><h1>Vragenlijst</h1><p>Beheer vragen en subthema's</p></div>
         <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost" onclick="openSurveyPreview()">Vragenlijst preview</button>
           <button class="btn btn-secondary" onclick="saveQuestionsDraft()" id="btn-save-draft">Wijzigingen opslaan</button>
           <button class="btn btn-primary" onclick="publishQuestions()" id="btn-publish-questions">Publiceren</button>
         </div>
@@ -560,6 +569,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <div id="tab-reports" style="display:none">
       <div class="page-header">
         <div><h1>Rapporten</h1><p>Alle gegenereerde rapporten per organisatie</p></div>
+        <button class="btn btn-secondary btn-sm" onclick="openReportPreview()">Rapport preview</button>
       </div>
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:8px">
@@ -621,10 +631,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <img id="logo-survey" src="" alt="Team Shapers" style="cursor:default">
     <span class="save-status" id="save-status">Alle antwoorden zijn opgeslagen</span>
     <div class="prog-wrap"><div class="progress-bar"><div class="progress-fill" id="survey-progress-fill" style="width:0%"></div></div></div>
+    <button class="btn btn-sm" id="btn-close-survey-preview" onclick="closeSurveyPreview()" style="display:none;background:rgba(255,255,255,.14);color:white">Preview sluiten</button>
   </div>
   <div class="survey-body">
     <div class="intro-card" id="survey-intro">
-      <div class="ts-pill">TeamBelevingsonderzoek</div>
+      <div class="ts-pill">Team APK</div>
       <h2 id="intro-welcome">Welkom!</h2>
       <p>Dit onderzoek geeft jou en je teamleden inzicht in de samenwerking, communicatie en het functioneren van jullie team.</p>
       <p>De resultaten worden verwerkt in een teamrapport én een individueel rapport. Het gaat niet over goed of fout, maar over wat jullie samen ervaren.</p>
@@ -758,9 +769,9 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   </div>
 </div>
 <div class="modal-overlay" id="modal-add-theme">
-  <div class="modal"><h3>Thema toevoegen</h3>
+  <div class="modal"><h3>Subthema toevoegen</h3>
     <div class="form-group"><label>Themanaam</label><input type="text" id="input-theme-name" placeholder="bijv. Innovatie"></div>
-    <div class="form-group"><label>Dimensie</label><select id="input-theme-dimension"></select></div>
+    <div class="form-group"><label>Team Shapers Thema</label><select id="input-theme-dimension"></select></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-add-theme')">Annuleren</button>
       <button class="btn btn-primary" onclick="addTheme()">Toevoegen</button>
@@ -771,7 +782,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   <div class="modal"><h3>Thema bewerken</h3>
     <input type="hidden" id="edit-theme-original">
     <div class="form-group"><label>Themanaam</label><input type="text" id="edit-theme-name" placeholder="Themanaam"></div>
-    <div class="form-group"><label>Dimensie</label><select id="edit-theme-dimension"></select></div>
+    <div class="form-group"><label>Team Shapers Thema</label><select id="edit-theme-dimension"></select></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-edit-theme')">Annuleren</button>
       <button class="btn btn-primary" onclick="saveEditTheme()">Opslaan</button>
@@ -779,9 +790,9 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   </div>
 </div>
 <div class="modal-overlay" id="modal-add-dimension">
-  <div class="modal"><h3>Dimensie toevoegen</h3>
-    <div class="form-group"><label>Dimensienaam</label><input type="text" id="input-dim-name" placeholder="bijv. Bestaansrecht"></div>
-    <div class="form-group"><label>Beschrijving <span style="color:var(--gray-mid);font-weight:400">(verschijnt op het rapport)</span></label><textarea id="input-dim-desc" rows="3" placeholder="Korte uitleg van deze dimensie..."></textarea></div>
+  <div class="modal"><h3>Team Shapers Thema toevoegen</h3>
+    <div class="form-group"><label>Naam Team Shapers Thema</label><input type="text" id="input-dim-name" placeholder="bijv. Bestaansrecht"></div>
+    <div class="form-group"><label>Beschrijving <span style="color:var(--gray-mid);font-weight:400">(verschijnt op het rapport)</span></label><textarea id="input-dim-desc" rows="3" placeholder="Korte uitleg van dit Team Shapers Thema..."></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-add-dimension')">Annuleren</button>
       <button class="btn btn-primary" onclick="addDimension()">Toevoegen</button>
@@ -789,10 +800,10 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   </div>
 </div>
 <div class="modal-overlay" id="modal-edit-dimension">
-  <div class="modal"><h3>Dimensie bewerken</h3>
+  <div class="modal"><h3>Team Shapers Thema bewerken</h3>
     <input type="hidden" id="edit-dim-original">
-    <div class="form-group"><label>Dimensienaam</label><input type="text" id="edit-dim-name" placeholder="Dimensienaam"></div>
-    <div class="form-group"><label>Beschrijving <span style="color:var(--gray-mid);font-weight:400">(verschijnt op het rapport)</span></label><textarea id="edit-dim-desc" rows="3" placeholder="Korte uitleg van deze dimensie..."></textarea></div>
+    <div class="form-group"><label>Naam Team Shapers Thema</label><input type="text" id="edit-dim-name" placeholder="Naam Team Shapers Thema"></div>
+    <div class="form-group"><label>Beschrijving <span style="color:var(--gray-mid);font-weight:400">(verschijnt op het rapport)</span></label><textarea id="edit-dim-desc" rows="3" placeholder="Korte uitleg van dit Team Shapers Thema..."></textarea></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-edit-dimension')">Annuleren</button>
       <button class="btn btn-primary" onclick="saveEditDimension()">Opslaan</button>
@@ -800,10 +811,13 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   </div>
 </div>
 <div class="modal-overlay" id="modal-lead-link">
-  <div class="modal"><h3>Deelbare leads-link</h3>
-    <p style="color:var(--gray-mid);font-size:14px;margin-bottom:10px">Stuur deze link naar wie je maar wilt. Ze vullen hun naam en organisatie in en starten direct met de vragenlijst. De resultaten verschijnen hier onder "Leads".</p>
-    <div class="alert alert-green" id="lead-link-box" style="word-break:break-all;font-size:13px;cursor:pointer"></div>
-    <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('modal-lead-link')">Sluiten</button></div>
+  <div class="modal"><h3>Nieuwe deelbare leads-link</h3>
+    <p style="color:var(--gray-mid);font-size:14px;margin-bottom:10px">Geef de link een naam (bijvoorbeeld het kanaal of de campagne) zodat je per link kunt zien hoeveel mensen erop klikken en hoeveel het onderzoek afronden.</p>
+    <div class="form-group"><label>Naam van de link</label><input type="text" id="lead-link-name" placeholder="bijv. LinkedIn november"></div>
+    <div id="lead-link-result" style="display:none">
+      <div class="alert alert-green" id="lead-link-box" style="word-break:break-all;font-size:13px;cursor:pointer"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-lead-link')">Sluiten</button><button class="btn btn-primary" id="lead-link-create-btn" onclick="createLeadLink()">Link aanmaken</button></div>
   </div>
 </div>
 <div class="modal-overlay" id="modal-confirm-delete">
@@ -840,22 +854,122 @@ function injectLogos(){
 
 var adminToken=sessionStorage.getItem('adminToken')||null;
 var db={organisations:[],questions:[],themes:[],themeDim:{},dimensions:[],answers:{},reports:{},knowledgeBase:[]};
-function uid(){return Math.random().toString(36).substr(2,9);}
-function genCode(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='TBQ-';for(var i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+
+// Every string that comes from the database (names, themes, question text, AI
+// advice) passes through this before it is put into innerHTML. Lead names and
+// organisation names are entered by anonymous visitors, so this is the line
+// between their input and script execution in the admin's browser.
+function esc(v){
+  if(v===null||v===undefined)return '';
+  return String(v).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+// Single place where a failed request becomes a visible error instead of a
+// silent no-op.
+async function api(url,opts){
+  var o=opts||{};
+  var headers={};
+  if(o.body)headers['Content-Type']='application/json';
+  if(o.admin&&adminToken)headers['x-admin-token']=adminToken;
+  var res=await fetch(url,{method:o.method||'GET',headers:headers,body:o.body?JSON.stringify(o.body):undefined});
+  var data=null;
+  try{data=await res.json();}catch(e){}
+  if(!res.ok){
+    var err=new Error((data&&data.error)||('Er ging iets mis ('+res.status+').'));
+    err.status=res.status;err.data=data;
+    throw err;
+  }
+  return data;
+}
+
+(function(){
+  // Marked with 'app-toast' so downloadReportPdf() keeps it out of the print window.
+  var s=document.createElement('style');
+  s.textContent='#app-toast-host{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:min(360px,calc(100vw - 32px))}'+
+    '.app-toast{background:#fff;border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.5;color:#1a1a1a;box-shadow:0 6px 24px rgba(0,0,0,.16);border-left:4px solid #7C309C;opacity:1;transform:translateY(0);transition:opacity .3s,transform .3s}'+
+    '.app-toast-warning{border-left-color:#E63946}.app-toast-success{border-left-color:#0F9F69}'+
+    '.app-toast-out{opacity:0;transform:translateY(-8px)}';
+  document.head.appendChild(s);
+})();
+
+function showNotice(msg,type){
+  var host=document.getElementById('app-toast-host');
+  if(!host){host=document.createElement('div');host.id='app-toast-host';document.body.appendChild(host);}
+  var el=document.createElement('div');
+  el.className='app-toast app-toast-'+(type||'info');
+  el.textContent=msg;
+  host.appendChild(el);
+  setTimeout(function(){
+    el.classList.add('app-toast-out');
+    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},300);
+  },4500);
+}
+
 function fmtDate(iso){if(!iso)return'';var d=new Date(iso);return d.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});}
 
+// Wraps an admin write so a failed request shows an error instead of letting
+// the UI update as if it had succeeded. Returns false when the call failed.
+async function adminWrite(url,opts,errMsg){
+  try{await api(url,Object.assign({admin:true},opts||{}));return true;}
+  catch(e){showNotice(e.message||errMsg||'Actie is mislukt.','warning');return false;}
+}
+
+// Na het slepen eerst hertekenen en pas daarna opslaan: anders blijft het item
+// tijdens het serververzoek nog op zijn oude plek staan, wat eruitziet alsof de
+// verplaatsing niet is aangekomen. Mislukt het opslaan, dan halen we de echte
+// volgorde weer op zodat het scherm niet iets toont wat niet bewaard is.
+async function persistOrder(url,body,errMsg){
+  renderQuestions();
+  var ok=await adminWrite(url,{method:'PUT',body:body},errMsg);
+  if(!ok)await reloadQuestionnaire();
+  return ok;
+}
+// Zet vragen in de volgorde van het beheerscherm: Team Shapers Thema, dan
+// subthema, dan de vraag zelf. Nodig zolang een sleepactie nog niet opnieuw van
+// de server is opgehaald — dan staat db.questions nog in de oude groepering.
+function questionsInConfiguredOrder(list){
+  var rank={},r=0;
+  (db.dimensions||[]).forEach(function(d){
+    (db.themes||[]).forEach(function(t){
+      if((db.themeDim||{})[t]===d.name&&rank[t]===undefined)rank[t]=r++;
+    });
+  });
+  (db.themes||[]).forEach(function(t){if(rank[t]===undefined)rank[t]=r++;});
+  var pos=new Map();
+  list.forEach(function(q,i){pos.set(q,i);});
+  return list.slice().sort(function(a,b){
+    var ra=rank[a.theme],rb=rank[b.theme];
+    if(ra===undefined)ra=9999;
+    if(rb===undefined)rb=9999;
+    return ra!==rb?ra-rb:pos.get(a)-pos.get(b);
+  });
+}
+async function reloadQuestionnaire(){
+  try{
+    var qData=await api('/api/admin/questions',{admin:true});
+    db.questions=qData.questions;
+    db.themes=qData.themes;
+    db.themeDim=qData.themeDim;
+    db.dimensions=qData.dimensions;
+    renderQuestions();
+  }catch(e){/* offline: het scherm houdt de laatste bekende volgorde aan */}
+}
+
 async function loadAdminData(){
-  var headers={'x-admin-token':adminToken};
   var results=await Promise.all([
-    fetch('/api/admin/organisations',{headers:headers}),
-    fetch('/api/admin/questions',{headers:headers}),
-    fetch('/api/admin/knowledge',{headers:headers}),
-    fetch('/api/admin/reports',{headers:headers})
+    api('/api/admin/organisations',{admin:true}),
+    api('/api/admin/questions',{admin:true}),
+    api('/api/admin/knowledge',{admin:true}),
+    api('/api/admin/reports',{admin:true}),
+    api('/api/admin/lead-links',{admin:true})
   ]);
-  var orgs=await results[0].json();
-  var qData=await results[1].json();
-  var kb=await results[2].json();
-  var reports=await results[3].json();
+  var orgs=results[0];
+  var qData=results[1];
+  var kb=results[2];
+  var reports=results[3];
+  db.leadLinks=results[4]||[];
   db.organisations=orgs;
   db.questions=qData.questions;
   db.themes=qData.themes;
@@ -896,7 +1010,7 @@ function adminTab(tab){
   });
   if(tab==='dashboard')renderDashboard();
   if(tab==='organisations')renderOrgs();
-  if(tab==='leads')renderLeads();
+  if(tab==='leads'){renderLeads();refreshLeadLinks();}
   if(tab==='questions')renderQuestions();
   if(tab==='reports')renderReports();
   if(tab==='knowledge')renderKb();
@@ -922,21 +1036,26 @@ function getAllLeads(){
 function scoreColor(s){return s>=7.5?'var(--green)':s>=6?'var(--yellow)':'#E63946';}
 function pillClass(s){return s>=7.5?'pill-green':s>=6?'pill-yellow':'pill-red';}
 
-// Colour per Likert answer (1=geheel mee oneens … 5=geheel mee eens)
-// Using Team Shapers palette: red → orange → yellow → lime → green
-var ANSWER_COLORS=['','#E63946','#F47B20','#EDB833','#8DC63F','#0F9F69'];
-
-function buildSpreadBar(indivRaw){
-  // indivRaw: array of 1-5 answers
-  if(!indivRaw||!indivRaw.length) return '';
-  // Sort answers low→high so bar fills left(negative)→right(positive)
-  var sorted=indivRaw.slice().sort(function(a,b){return a-b;});
-  var segW=Math.round(100/sorted.length);
-  var segs=sorted.map(function(v,i){
-    var w=(i===sorted.length-1)?(100-segW*i):segW;
-    return '<div class="rpt-spread-seg" style="width:'+w+'%;background:'+ANSWER_COLORS[v]+'"></div>';
-  }).join('');
-  return '<div class="rpt-spread-bars">'+segs+'</div>';
+// Spreidingsband: paarse band van laagste tot hoogste antwoord (1-5 → 0-10 schaal),
+// met een stip op het gemiddelde. Smalle band = consensus, brede band = verdeeldheid.
+function buildSpreadBar(indivRaw,score){
+  var col=scoreColor(score);
+  // Stippen bij de uiteinden worden geklemd zodat ze binnen de lijn vallen
+  // (clamp op px-afstand = halve stipbreedte incl. rand).
+  var html='<div class="rpt-spread-base"></div>';
+  if(indivRaw&&indivRaw.length){
+    var min=Math.min.apply(null,indivRaw),max=Math.max.apply(null,indivRaw);
+    // Iedereen hetzelfde antwoord = geen spreiding: dan alleen de stip, geen band.
+    if(max>min){
+      var left=Math.max(min*20,0),width=Math.min(max*20-left,100-left);
+      html+='<div class="rpt-spread-band" style="left:'+left+'%;width:'+width+'%;background:'+col+'"></div>';
+    }
+    indivRaw.forEach(function(v){
+      html+='<div class="rpt-spread-ind" style="left:clamp(4px,'+Math.min(v*20,100)+'%,calc(100% - 4px));background:'+col+'"></div>';
+    });
+  }
+  html+='<div class="rpt-spread-avg" style="left:clamp(9px,'+Math.min(score*10,100)+'%,calc(100% - 9px));background:'+col+';box-shadow:0 0 0 1px '+col+'"></div>';
+  return '<div class="rpt-spread-track">'+html+'</div>';
 }
 
 function renderDashboard(){
@@ -956,8 +1075,8 @@ function renderDashboard(){
     var prog=p.completed?100:activeQs.length?Math.round((p.answerCount||0)/activeQs.length*100):0;
     var badge=p.completed?'<span class="badge badge-green">Afgerond</span>':p.loggedIn?'<span class="badge badge-yellow">Bezig ('+prog+'%)</span>':'<span class="badge badge-gray">Niet gestart</span>';
     var pName=p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
-    return '<tr><td><strong>'+pName+'</strong>'+(p.email?'<br><span style="font-size:11px;color:var(--gray-mid)">'+p.email+'</span>':'')+'</td>'+
-      '<td>'+(p.teamName||'')+'</td><td>'+badge+'</td>'+
+    return '<tr><td><strong>'+esc(pName)+'</strong>'+(p.email?'<br><span style="font-size:11px;color:var(--gray-mid)">'+esc(p.email)+'</span>':'')+'</td>'+
+      '<td>'+esc(p.teamName||'')+'</td><td>'+badge+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:7px"><div class="progress-bar" style="width:65px"><div class="progress-fill" style="width:'+prog+'%"></div></div><span style="font-size:11px;color:var(--gray-mid)">'+prog+'%</span></div></td>'+
       '<td style="font-size:12px;color:var(--gray-mid)">'+(p.completedAt?fmtDate(p.completedAt):'')+'</td></tr>';
   }).join('');
@@ -974,8 +1093,11 @@ function renderLeads(){
     '<div class="stat-card purple"><div class="label">Totaal leads</div><div class="value">'+total+'</div></div>'+
     '<div class="stat-card"><div class="label">Onafgerond</div><div class="value" style="color:#555">'+inProg+'</div></div>'+
     '<div class="stat-card green"><div class="label">Afgerond</div><div class="value">'+completed+'</div></div>';
+  renderLeadLinks();
+  var linkNames={};
+  (db.leadLinks||[]).forEach(function(l){linkNames[l.token]=l.name;});
   var tbody=document.getElementById('leads-tbody');if(!tbody)return;
-  if(!total){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--gray-mid)">Nog geen leads. Deel de link om leads te verzamelen.</td></tr>';return;}
+  if(!total){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--gray-mid)">Nog geen leads. Deel een link om leads te verzamelen.</td></tr>';return;}
   // newest first
   var sorted=leads.slice().sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
   tbody.innerHTML=sorted.map(function(p){
@@ -986,19 +1108,91 @@ function renderLeads(){
       '<button class="btn btn-sm btn-ghost" style="white-space:nowrap;font-size:11px" data-action="viewIndividualReport" data-pid="'+p.id+'">Rapport</button>'+
       '<button class="btn btn-sm btn-secondary" style="white-space:nowrap;font-size:11px" data-action="genIndividualForPid" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(pName)+'">Genereer</button>'+
       '<button style="background:none;border:none;cursor:pointer;color:var(--gray-mid);font-size:15px;padding:2px 6px;line-height:1" data-action="deleteParticipant" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(pName)+'" title="Verwijder lead">&times;</button>';
-    return '<tr><td><strong>'+pName+'</strong></td>'+
-      '<td>'+(p.orgName||'')+'</td>'+
+    var via=p.leadLinkToken?(linkNames[p.leadLinkToken]||'Verwijderde link'):'—';
+    return '<tr><td><strong>'+esc(pName)+'</strong></td>'+
+      '<td>'+esc(p.orgName||'')+'</td>'+
+      '<td style="font-size:12px;color:var(--gray-mid)">'+esc(via)+'</td>'+
       '<td>'+badge+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:7px"><div class="progress-bar" style="width:65px"><div class="progress-fill" style="width:'+prog+'%"></div></div><span style="font-size:11px;color:var(--gray-mid)">'+prog+'%</span></div></td>'+
       '<td style="font-size:12px;color:var(--gray-mid)">'+(p.createdAt?fmtDate(p.createdAt):'')+'</td>'+
       '<td style="text-align:right;white-space:nowrap"><div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">'+acts+'</div></td></tr>';
   }).join('');
 }
+
+// ── LEAD LINKS ──
+function leadLinkUrl(token){return location.origin+location.pathname+'?teamonderzoek='+encodeURIComponent(token);}
+
+function renderLeadLinks(){
+  var tbody=document.getElementById('lead-links-tbody');if(!tbody)return;
+  var links=db.leadLinks||[];
+  if(!links.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:26px;color:var(--gray-mid)">Nog geen links. Maak er een aan om leads te verzamelen.</td></tr>';return;}
+  tbody.innerHTML=links.map(function(l){
+    // Conversie = van de mensen die begonnen zijn, hoeveel rondden af.
+    var conv=l.registrations?Math.round(l.completed/l.registrations*100):0;
+    return '<tr><td><strong>'+esc(l.name)+'</strong><br><span style="font-size:11px;color:var(--gray-mid)">'+(l.createdAt?esc(fmtDate(l.createdAt)):'')+'</span></td>'+
+      '<td><button class="btn btn-sm btn-ghost" style="font-size:11px" data-action="copyLeadLink" data-token="'+esc(l.token)+'">Kopieer link</button></td>'+
+      '<td><strong>'+l.clicks+'</strong></td>'+
+      '<td>'+l.uniqueClicks+'</td>'+
+      '<td>'+l.registrations+'</td>'+
+      '<td><strong style="color:var(--green)">'+l.completed+'</strong></td>'+
+      '<td><div style="display:flex;align-items:center;gap:7px"><div class="progress-bar" style="width:55px"><div class="progress-fill" style="width:'+conv+'%"></div></div><span style="font-size:11px;color:var(--gray-mid)">'+conv+'%</span></div></td>'+
+      '<td style="text-align:right;white-space:nowrap">'+
+        '<button class="btn btn-sm btn-ghost" style="font-size:11px" data-action="renameLeadLink" data-token="'+esc(l.token)+'" data-name="'+encodeURIComponent(l.name)+'">Hernoem</button>'+
+        '<button style="background:none;border:none;cursor:pointer;color:var(--gray-mid);font-size:15px;padding:2px 6px;line-height:1" data-action="deleteLeadLink" data-token="'+esc(l.token)+'" data-name="'+encodeURIComponent(l.name)+'" title="Verwijder link">&times;</button>'+
+      '</td></tr>';
+  }).join('');
+}
+
+async function refreshLeadLinks(){
+  try{db.leadLinks=await api('/api/admin/lead-links',{admin:true});}catch(e){}
+  renderLeadLinks();
+}
+
 function openLeadLinkModal(){
-  var link=location.origin+location.pathname+'?teamonderzoek=1';
-  var box=document.getElementById('lead-link-box');
-  if(box){box.textContent=link;box.onclick=function(){navigator.clipboard.writeText(link).catch(function(){});box.textContent='Gekopieerd!';setTimeout(function(){box.textContent=link;},1500);};}
+  document.getElementById('lead-link-name').value='';
+  document.getElementById('lead-link-result').style.display='none';
+  document.getElementById('lead-link-create-btn').style.display='';
   openModal('modal-lead-link');
+}
+
+async function createLeadLink(){
+  var name=document.getElementById('lead-link-name').value.trim();
+  if(!name){showNotice('Geef de link een naam.','warning');return;}
+  var btn=document.getElementById('lead-link-create-btn');
+  btn.disabled=true;
+  try{
+    var link=await api('/api/admin/lead-links',{method:'POST',admin:true,body:{name:name}});
+    db.leadLinks=[link].concat(db.leadLinks||[]);
+    var url=leadLinkUrl(link.token);
+    var box=document.getElementById('lead-link-box');
+    box.textContent=url;
+    box.onclick=function(){copyLeadLinkText(url,box);};
+    document.getElementById('lead-link-result').style.display='block';
+    btn.style.display='none';
+    renderLeads();
+  }catch(e){showNotice(e.message||'Link aanmaken is mislukt.','warning');}
+  finally{btn.disabled=false;}
+}
+
+function copyLeadLinkText(url,el){
+  navigator.clipboard.writeText(url).then(function(){showNotice('Link gekopieerd.','success');}).catch(function(){showNotice('Kopiëren is mislukt: '+url,'warning');});
+  if(el){var prev=el.textContent;el.textContent='Gekopieerd!';setTimeout(function(){el.textContent=prev;},1500);}
+}
+
+async function renameLeadLink(token,current){
+  var name=prompt('Nieuwe naam voor deze link:',current);
+  if(!name||!name.trim()||name.trim()===current)return;
+  if(!await adminWrite('/api/admin/lead-links/'+encodeURIComponent(token),{method:'PUT',body:{name:name.trim()}},'Hernoemen is mislukt.'))return;
+  await refreshLeadLinks();
+  renderLeads();
+}
+
+function deleteLeadLink(token,name){
+  confirmAction('Link verwijderen?','"'+name+'" werkt daarna niet meer. De leads die via deze link binnenkwamen blijven bewaard.',async function(){
+    if(!await adminWrite('/api/admin/lead-links/'+encodeURIComponent(token),{method:'DELETE'},'Verwijderen is mislukt.'))return;
+    db.leadLinks=(db.leadLinks||[]).filter(function(l){return l.token!==token;});
+    renderLeads();
+  });
 }
 
 function renderOrgs(){
@@ -1010,7 +1204,7 @@ function renderOrgs(){
     return '<div class="org-card'+(org.collapsed?' collapsed':'')+'" id="org-'+org.id+'">'+
       '<div class="org-card-header" data-action="toggleOrg" data-org="'+org.id+'">'+
       '<div style="display:flex;align-items:center;gap:8px">'+
-      '<span class="org-card-title">'+org.name+'</span>'+
+      '<span class="org-card-title">'+esc(org.name)+'</span>'+
       '<span class="org-card-meta">'+(org.teams||[]).length+' team(s)</span></div>'+
       '<div style="display:flex;gap:7px;align-items:center">'+
       '<button style="background:none;border:none;cursor:pointer;color:#E63946;font-size:18px;padding:2px 8px;line-height:1;font-weight:700" data-action="deleteOrg" data-org="'+org.id+'" title="Verwijder organisatie">&times;</button>'+
@@ -1038,8 +1232,8 @@ function renderTeamBlock(org,team){
     }
     var pName=p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
     return '<tr>'+
-      '<td>'+pName+'</td>'+
-      '<td><span class="copy-btn" data-action="copyLink" data-code="'+p.code+'" data-pid="'+p.id+'" id="cbtn-'+p.id+'">kopieer link</span></td>'+
+      '<td>'+esc(pName)+'</td>'+
+      '<td><span class="copy-btn" data-action="copyLink" data-code="'+esc(p.code)+'" data-pid="'+esc(p.id)+'" id="cbtn-'+esc(p.id)+'">kopieer link</span></td>'+
       '<td>'+badge+'</td>'+
       '<td>'+(p.completedAt?fmtDate(p.completedAt):'')+'</td>'+
       '<td style="text-align:right;white-space:nowrap"><div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">'+actBtns+'</div></td>'+
@@ -1047,7 +1241,7 @@ function renderTeamBlock(org,team){
   }).join('');
   return '<div class="team-block" id="tblock-'+team.id+'">'+
     '<div class="team-header" data-action="toggleTeam" data-team="'+team.id+'" style="cursor:pointer">'+
-    '<div style="display:flex;align-items:center;gap:8px"><div class="team-title">'+team.name+'</div>'+
+    '<div style="display:flex;align-items:center;gap:8px"><div class="team-title">'+esc(team.name)+'</div>'+
     '<div class="team-meta">'+ps.length+' deelnemers &bull; '+completed+' afgerond</div></div>'+
     '<div style="display:flex;gap:6px;align-items:center">'+
     (report?'<button class="btn btn-sm btn-ghost" data-action="viewReport" data-org="'+org.id+'" data-team="'+team.id+'">Rapport bekijken</button>':'')+
@@ -1090,7 +1284,7 @@ async function addOrganisation(){
 }
 function deleteOrg(id){
   confirmAction('Organisatie verwijderen','Weet je zeker dat je deze organisatie wilt verwijderen? Alle teams en deelnemers worden ook verwijderd.',async function(){
-    await fetch('/api/admin/organisations/'+id,{method:'DELETE',headers:{'x-admin-token':adminToken}});
+    if(!await adminWrite('/api/admin/organisations/'+id,{method:'DELETE'},'Organisatie verwijderen is mislukt.'))return;
     db.organisations=db.organisations.filter(function(o){return o.id!==id;});
     renderOrgs();
   });
@@ -1110,7 +1304,7 @@ async function addTeam(){
 }
 function deleteTeam(orgId,teamId){
   confirmAction('Team verwijderen','Weet je zeker dat je dit team wilt verwijderen? Alle deelnemers en antwoorden worden ook verwijderd.',async function(){
-    await fetch('/api/admin/teams/'+teamId,{method:'DELETE',headers:{'x-admin-token':adminToken}});
+    if(!await adminWrite('/api/admin/teams/'+teamId,{method:'DELETE'},'Team verwijderen is mislukt.'))return;
     var org=db.organisations.find(function(o){return o.id===orgId;});
     if(org)org.teams=org.teams.filter(function(t){return t.id!==teamId;});
     renderOrgs();
@@ -1164,26 +1358,26 @@ function themeCardHTML(theme){
   var tqs=db.questions.filter(function(q){return q.theme===theme;});
   var openThemes=window._openThemes||{};
   var isOpen=openThemes[theme]===true; // default closed
-  return '<div class="theme-card'+(isOpen?' open':'')+'" id="tcard-'+ti+'" draggable="true" data-theme="'+theme+'" data-ti="'+ti+'"'+
+  return '<div class="theme-card'+(isOpen?' open':'')+'" id="tcard-'+ti+'" draggable="true" data-theme="'+esc(theme)+'" data-ti="'+ti+'"'+
     ' ondragstart="themeDragStart(event)" ondragover="themeDragOver(event)" ondragleave="themeDragLeave(event)" ondrop="themeDrop(event)" ondragend="themeDragEnd(event)">'+
-    '<div class="theme-card-header" data-action="toggleThemeCard" data-theme="'+theme+'">'+
+    '<div class="theme-card-header" data-action="toggleThemeCard" data-theme="'+esc(theme)+'">'+
     '<span class="theme-drag-handle" title="Slepen om volgorde te wijzigen">&#x2630;</span>'+
-    '<span class="theme-card-title">'+theme+'</span>'+
+    '<span class="theme-card-title">'+esc(theme)+'</span>'+
     '<span class="theme-card-meta">'+tqs.length+' vragen</span>'+
     '<div style="display:flex;gap:6px;margin-left:8px">'+
-    '<button class="btn btn-sm btn-ghost icon-btn" data-action="editThemeBtn" data-theme="'+theme+'" title="Thema hernoemen / dimensie wijzigen">&#9998;</button>'+
-    '<button class="btn btn-sm btn-danger icon-btn" data-action="deleteThemeBtn" data-theme="'+theme+'" title="Thema verwijderen">&times;</button>'+
+    '<button class="btn btn-sm btn-ghost icon-btn" data-action="editThemeBtn" data-theme="'+esc(theme)+'" title="Thema hernoemen / Team Shapers Thema wijzigen">&#9998;</button>'+
+    '<button class="btn btn-sm btn-danger icon-btn" data-action="deleteThemeBtn" data-theme="'+esc(theme)+'" title="Thema verwijderen">&times;</button>'+
     '</div>'+
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;flex-shrink:0;transition:transform .3s;transform:'+(isOpen?'':'rotate(-90deg)')+'"><polyline points="6 9 12 15 18 9"/></svg>'+
     '</div>'+
-    '<div class="theme-card-body"><div class="theme-card-body-inner" data-theme="'+theme+'"'+
+    '<div class="theme-card-body"><div class="theme-card-body-inner" data-theme="'+esc(theme)+'"'+
     ' ondragover="themebodyDragOver(event)" ondragleave="themebodyDragLeave(event)" ondrop="themebodyDrop(event)">'+
     (tqs.length?tqs.map(function(q){
-      return '<div class="q-list-item'+(q.active?'':' inactive')+'" draggable="true" data-qid="'+q.id+'" data-theme="'+theme+'"'+
+      return '<div class="q-list-item'+(q.active?'':' inactive')+'" draggable="true" data-qid="'+esc(q.id)+'" data-theme="'+esc(theme)+'"'+
         ' ondragstart="qDragStart(event)" ondragover="qDragOver(event)" ondragleave="qDragLeave(event)" ondrop="qDrop(event)" ondragend="qDragEnd(event)">'+
         '<span class="q-drag-handle">&#x2630;</span>'+
         '<div style="flex:1">'+
-        '<div style="font-size:13px;color:var(--black);line-height:1.4">'+q.text+'</div>'+
+        '<div style="font-size:13px;color:var(--black);line-height:1.4">'+esc(q.text)+'</div>'+
         '<div style="margin-top:3px">'+
         '<span style="font-size:11px;color:var(--gray-mid)">'+(q.active?'Actief':'Inactief')+'</span>'+
         '</div></div>'+
@@ -1193,7 +1387,7 @@ function themeCardHTML(theme){
         '<button class="btn btn-sm btn-danger" data-action="deleteQ" data-qid="'+q.id+'">&#x2715;</button></div></div>';
     }).join(''):'<div style="font-size:13px;color:var(--gray-mid);padding:8px 0">Nog geen vragen in dit thema.</div>')+
     '<div style="padding:10px 0 4px;border-top:1px solid var(--gray-border);margin-top:6px">'+
-    '<button class="btn btn-sm btn-secondary" data-action="addQToTheme" data-theme="'+theme+'" style="font-size:12px">+ Vraag toevoegen</button>'+
+    '<button class="btn btn-sm btn-secondary" data-action="addQToTheme" data-theme="'+esc(theme)+'" style="font-size:12px">+ Vraag toevoegen</button>'+
     '</div>'+
     '</div></div></div>';
 }
@@ -1203,20 +1397,20 @@ function renderQuestions(){
   var container=document.getElementById('question-list');
   if(!container)return;
   // fill theme dropdowns in modals
-  var opts=themes.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('');
+  var opts=themes.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('');
   var sel=document.getElementById('input-q-theme');if(sel)sel.innerHTML=opts;
   var esel=document.getElementById('edit-q-theme');if(esel)esel.innerHTML=opts;
   // fill dimension dropdowns (used in add/edit theme modals)
-  var dimOpts='<option value="">— Geen dimensie —</option>'+db.dimensions.map(function(d){return '<option value="'+d.name+'">'+d.name+'</option>';}).join('');
+  var dimOpts='<option value="">— Geen Team Shapers Thema —</option>'+db.dimensions.map(function(d){return '<option value="'+esc(d.name)+'">'+esc(d.name)+'</option>';}).join('');
   ['input-theme-dimension','edit-theme-dimension'].forEach(function(id){var s=document.getElementById(id);if(s)s.innerHTML=dimOpts;});
 
   // top toolbar
   var toolbar='<div style="display:flex;gap:8px;margin-bottom:16px">'+
-    '<button class="btn btn-primary" data-action="addThemeBtn" style="font-size:13px">+ Thema toevoegen</button>'+
-    '<button class="btn btn-ghost" data-action="addDimensionBtn" style="font-size:13px">+ Dimensie toevoegen</button>'+
+    '<button class="btn btn-primary" data-action="addThemeBtn" style="font-size:13px">+ Subthema toevoegen</button>'+
+    '<button class="btn btn-ghost" data-action="addDimensionBtn" style="font-size:13px">+ Team Shapers Thema toevoegen</button>'+
     '</div>';
 
-  if(!themes.length&&!db.dimensions.length){container.innerHTML=toolbar+'<div class="empty-state">Nog geen dimensies of thema\'s. Voeg er een toe.</div>';return;}
+  if(!themes.length&&!db.dimensions.length){container.innerHTML=toolbar+'<div class="empty-state">Nog geen Team Shapers Thema\'s of subthema\'s. Voeg er een toe.</div>';return;}
 
   // build dimension groups (in dimension sort order) + a "Zonder dimensie" group for unassigned themes
   var openDims=window._openDims||{};
@@ -1226,26 +1420,26 @@ function renderQuestions(){
     if(!isReal&&!groupThemes.length)return ''; // hide empty "Zonder dimensie"
     var isOpen=openDims[key]!==false; // default OPEN
     var qCount=db.questions.filter(function(q){return groupThemes.indexOf(q.theme)!==-1;}).length;
-    var head='<div class="dim-card-header" data-action="toggleDimCard" data-dim="'+key+'">'+
+    var head='<div class="dim-card-header" data-action="toggleDimCard" data-dim="'+esc(key)+'">'+
       (isReal?'<span class="dim-drag-handle" title="Slepen om volgorde te wijzigen">&#x2630;</span>':'')+
       '<div style="flex:1;min-width:0">'+
       '<div style="display:flex;align-items:center;gap:10px">'+
-      '<span class="dim-card-title">'+(isReal?dimName:'Zonder dimensie')+'</span>'+
-      '<span class="dim-card-meta">'+groupThemes.length+' thema\'s &middot; '+qCount+' vragen</span>'+
+      '<span class="dim-card-title">'+(isReal?esc(dimName):'Zonder Team Shapers Thema')+'</span>'+
+      '<span class="dim-card-meta">'+groupThemes.length+' subthema'+(groupThemes.length===1?'':'\'s')+' &middot; '+qCount+' vragen</span>'+
       '</div>'+
-      (isReal&&desc?'<div class="dim-card-desc">'+desc+'</div>':'')+
+      (isReal&&desc?'<div class="dim-card-desc">'+esc(desc)+'</div>':'')+
       '</div>'+
       (isReal?'<div style="display:flex;gap:6px;flex-shrink:0">'+
-        '<button class="btn btn-sm btn-ghost icon-btn icon-btn-lg" data-action="editDimensionBtn" data-dim="'+dimName+'" title="Dimensie hernoemen / beschrijving">&#9998;</button>'+
-        '<button class="btn btn-sm btn-danger icon-btn icon-btn-lg" data-action="deleteDimensionBtn" data-dim="'+dimName+'" title="Dimensie verwijderen">&times;</button>'+
+        '<button class="btn btn-sm btn-ghost icon-btn icon-btn-lg" data-action="editDimensionBtn" data-dim="'+esc(dimName)+'" title="Team Shapers Thema hernoemen / beschrijving">&#9998;</button>'+
+        '<button class="btn btn-sm btn-danger icon-btn icon-btn-lg" data-action="deleteDimensionBtn" data-dim="'+esc(dimName)+'" title="Team Shapers Thema verwijderen">&times;</button>'+
         '</div>':'')+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px;flex-shrink:0;transition:transform .3s;transform:'+(isOpen?'':'rotate(-90deg)')+'"><polyline points="6 9 12 15 18 9"/></svg>'+
       '</div>';
     var body='<div class="dim-card-body"><div class="dim-card-body-inner">'+
-      (groupThemes.length?groupThemes.map(themeCardHTML).join(''):'<div style="font-size:13px;color:var(--gray-mid);padding:6px 2px">Nog geen thema\'s in deze dimensie.</div>')+
+      (groupThemes.length?groupThemes.map(themeCardHTML).join(''):'<div style="font-size:13px;color:var(--gray-mid);padding:6px 2px">Nog geen subthema\'s in dit Team Shapers Thema.</div>')+
       '</div></div>';
     var dragAttrs=isReal?' draggable="true" ondragstart="dimDragStart(event)" ondragover="dimDragOver(event)" ondragleave="dimDragLeave(event)" ondrop="dimDrop(event)" ondragend="dimDragEnd(event)"':'';
-    return '<div class="dim-card'+(isOpen?' open':'')+'" data-dim="'+key+'"'+dragAttrs+'>'+head+body+'</div>';
+    return '<div class="dim-card'+(isOpen?' open':'')+'" data-dim="'+esc(key)+'"'+dragAttrs+'>'+head+body+'</div>';
   }
 
   var html=toolbar;
@@ -1276,12 +1470,12 @@ async function saveEditQuestion(){
   var esel=document.getElementById('edit-q-theme');
   var newTheme=esel?esel.value:q.theme;
   var newText=document.getElementById('edit-q-text').value.trim();
-  await fetch('/api/admin/questions/'+qid,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({theme:newTheme,text:newText,active:q.active})});
+  if(!await adminWrite('/api/admin/questions/'+qid,{method:'PUT',body:{theme:newTheme,text:newText,active:q.active}},'Vraag opslaan is mislukt.'))return;
   q.theme=newTheme;q.text=newText;
   closeModal('modal-edit-question');renderQuestions();
 }
-async function toggleQ(id){var q=db.questions.find(function(x){return x.id===id;});if(q){q.active=!q.active;await fetch('/api/admin/questions/'+id,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({theme:q.theme,text:q.text,active:q.active})});renderQuestions();}}
-function deleteQ(id){confirmAction('Vraag verwijderen','Weet je zeker dat je deze vraag wilt verwijderen?',async function(){await fetch('/api/admin/questions/'+id,{method:'DELETE',headers:{'x-admin-token':adminToken}});db.questions=db.questions.filter(function(x){return x.id!==id;});renderQuestions();});}
+async function toggleQ(id){var q=db.questions.find(function(x){return x.id===id;});if(!q)return;q.active=!q.active;if(!await adminWrite('/api/admin/questions/'+id,{method:'PUT',body:{theme:q.theme,text:q.text,active:q.active}},'Vraag bijwerken is mislukt.')){q.active=!q.active;return;}renderQuestions();}
+function deleteQ(id){confirmAction('Vraag verwijderen','Weet je zeker dat je deze vraag wilt verwijderen?',async function(){if(!await adminWrite('/api/admin/questions/'+id,{method:'DELETE'},'Vraag verwijderen is mislukt.'))return;db.questions=db.questions.filter(function(x){return x.id!==id;});renderQuestions();});}
 
 // ── KNOWLEDGE BASE ──
 function renderKb(){
@@ -1289,9 +1483,9 @@ function renderKb(){
   var c=document.getElementById('kb-list');if(!c)return;
   if(!items.length){c.innerHTML='<div class="empty-state">Nog geen kennis toegevoegd.</div>';return;}
   c.innerHTML=items.map(function(item){
-    return '<div class="kb-item"><div class="kb-header"><div class="kb-title">'+item.title+'</div>'+
-      '<button class="btn btn-sm btn-danger" data-action="deleteKb" data-kbid="'+item.id+'">Verwijder</button></div>'+
-      '<div class="kb-body">'+item.content+'</div></div>';
+    return '<div class="kb-item"><div class="kb-header"><div class="kb-title">'+esc(item.title)+'</div>'+
+      '<button class="btn btn-sm btn-danger" data-action="deleteKb" data-kbid="'+esc(item.id)+'">Verwijder</button></div>'+
+      '<div class="kb-body">'+esc(item.content)+'</div></div>';
   }).join('');
 }
 async function addKbItem(){
@@ -1308,7 +1502,7 @@ async function addKbItem(){
   document.getElementById('input-kb-content').value='';
   renderKb();
 }
-function deleteKb(id){confirmAction('Item verwijderen','Weet je zeker dat je dit kennisbank-item wilt verwijderen?',async function(){await fetch('/api/admin/knowledge/'+id,{method:'DELETE',headers:{'x-admin-token':adminToken}});db.knowledgeBase=(db.knowledgeBase||[]).filter(function(x){return x.id!==id;});renderKb();});}
+function deleteKb(id){confirmAction('Item verwijderen','Weet je zeker dat je dit kennisbank-item wilt verwijderen?',async function(){if(!await adminWrite('/api/admin/knowledge/'+id,{method:'DELETE'},'Item verwijderen is mislukt.'))return;db.knowledgeBase=(db.knowledgeBase||[]).filter(function(x){return x.id!==id;});renderKb();});}
 
 // ── REPORTS TAB ──
 function renderReports(){
@@ -1320,7 +1514,7 @@ function renderReports(){
     db.organisations.forEach(function(o){orgNames.push(o.name);});
     var curFilter=filterEl.value;
     filterEl.innerHTML='<option value="">Alle organisaties</option>'+
-      realOrgs().map(function(o){return '<option value="'+o.id+'"'+(curFilter===o.id?' selected':'')+'>'+o.name+'</option>';}).join('');
+      realOrgs().map(function(o){return '<option value="'+esc(o.id)+'"'+(curFilter===o.id?' selected':'')+'>'+esc(o.name)+'</option>';}).join('');
     filterEl.value=curFilter;
   }
   var filterOrgId=filterEl?filterEl.value:'';
@@ -1336,7 +1530,7 @@ function renderReports(){
       }
     });
     teamFilterEl.innerHTML='<option value="">Alle</option>'+teamsForFilter.map(function(t){
-      return '<option value="'+t.id+'"'+(curTeamFilter===t.id?' selected':'')+'>'+t.name+(filterOrgId?'':' ('+t.org+')')+'</option>';
+      return '<option value="'+esc(t.id)+'"'+(curTeamFilter===t.id?' selected':'')+'>'+esc(t.name)+(filterOrgId?'':' ('+esc(t.org)+')')+'</option>';
     }).join('');
     teamFilterEl.value=curTeamFilter;
     filterTeamId=teamFilterEl.value;
@@ -1377,17 +1571,17 @@ function renderReports(){
     var badge=x.isTeam
       ?'<span class="badge badge-gray" style="font-size:10px">Team</span>'
       :'<span class="badge badge-gray" style="font-size:10px">Individueel</span>';
-    var sub=x.org+(x.team?' &bull; '+x.team:'')+' &bull; '+fmtDate(x.r.generatedAt);
+    var sub=esc(x.org)+(x.team?' &bull; '+esc(x.team):'')+' &bull; '+fmtDate(x.r.generatedAt);
     return '<div class="report-list-item">'+
-      '<div><div class="rli-title" style="display:flex;align-items:center;gap:8px">'+x.label+' '+badge+'</div>'+
+      '<div><div class="rli-title" style="display:flex;align-items:center;gap:8px">'+esc(x.label)+' '+badge+'</div>'+
       '<div class="rli-sub">'+sub+'</div></div>'+
       '<div style="display:flex;gap:7px">'+
-      '<button class="btn btn-sm btn-secondary" data-action="viewStoredReport" data-rkey="'+x.rkey+'">Bekijken</button>'+
-      '<button class="btn btn-sm btn-ghost" data-action="shareReport" data-teamid="'+x.rkey+'">Delen</button>'+
-      '<button class="btn btn-sm btn-danger" data-action="deleteReport" data-team="'+x.rkey+'">Verwijder</button></div></div>';
+      '<button class="btn btn-sm btn-secondary" data-action="viewStoredReport" data-rkey="'+esc(x.rkey)+'">Bekijken</button>'+
+      '<button class="btn btn-sm btn-ghost" data-action="shareReport" data-teamid="'+esc(x.rkey)+'">Delen</button>'+
+      '<button class="btn btn-sm btn-danger" data-action="deleteReport" data-team="'+esc(x.rkey)+'">Verwijder</button></div></div>';
   }).join('');
 }
-function deleteReport(rkey){confirmAction('Rapport verwijderen','Weet je zeker dat je dit rapport wilt verwijderen?',async function(){await fetch('/api/admin/reports/'+rkey,{method:'DELETE',headers:{'x-admin-token':adminToken}});if(db.reports)delete db.reports[rkey];renderReports();});}
+function deleteReport(rkey){confirmAction('Rapport verwijderen','Weet je zeker dat je dit rapport wilt verwijderen?',async function(){if(!await adminWrite('/api/admin/reports/'+encodeURIComponent(rkey),{method:'DELETE'},'Rapport verwijderen is mislukt.'))return;if(db.reports)delete db.reports[rkey];renderReports();});}
 
 
 // Participant selection state per team
@@ -1396,8 +1590,13 @@ var currentResultsPid=null,currentResultsPname=null;
 async function viewParticipantResults(pid,pname){
   currentResultsPid=pid;currentResultsPname=decodeURIComponent(pname);
   if(!db.answers[pid]){
-    var aRes=await fetch('/api/admin/answers/'+pid,{headers:{'x-admin-token':adminToken}});
-    db.answers[pid]=await aRes.json();
+    // Not cached on failure: a stored error object would silently render as
+    // "no answers" for the rest of the session.
+    try{
+      db.answers[pid]=await api('/api/admin/answers/'+pid,{admin:true});
+    }catch(e){
+      showNotice(e.message||'Antwoorden konden niet geladen worden.','warning');return;
+    }
   }
   var ans=db.answers[pid]||{};
   var activeQs=db.questions.filter(function(q){return q.active;});
@@ -1407,10 +1606,10 @@ async function viewParticipantResults(pid,pname){
     var qs=activeQs.filter(function(q){return q.theme===theme;});
     var hasAns=qs.some(function(q){return ans[q.id]!==undefined;});
     if(!hasAns)return;
-    html+='<h4>'+theme+'</h4>';
+    html+='<h4>'+esc(theme)+'</h4>';
     qs.forEach(function(q){
       var v=ans[q.id];if(v===undefined)return;
-      html+='<div class="result-q-row"><div class="result-q-label">'+q.text+'</div><div class="result-q-val">'+LABELS[v]+'</div></div>';
+      html+='<div class="result-q-row"><div class="result-q-label">'+esc(q.text)+'</div><div class="result-q-val">'+esc(LABELS[v])+'</div></div>';
     });
   });
   html+='</div>';
@@ -1421,6 +1620,23 @@ async function viewParticipantResults(pid,pname){
 
 var currentReportTeamId=null;
 var reportingTeam=null;
+// Scoring and AI advice now happen server-side, so a failed AI call becomes a
+// visible warning instead of a report with silently empty advice.
+async function runReportGeneration(payload,busyText){
+  var bar=document.getElementById('gen-bar');
+  bar.classList.add('visible');
+  document.getElementById('gen-bar-text').textContent=busyText;
+  try{
+    var result=await api('/api/admin/reports/generate',{method:'POST',admin:true,body:payload});
+    if(!db.reports)db.reports={};
+    db.reports[result.report.id]=result.report;
+    if(result.aiWarning)showNotice('Rapport is opgeslagen, maar het AI-advies is niet gelukt: '+result.aiWarning,'warning');
+    return result.report;
+  }finally{
+    bar.classList.remove('visible');
+  }
+}
+
 async function generateReport(){
   if(!currentTeamForReport)return;
   var orgId=currentTeamForReport.orgId,teamId=currentTeamForReport.teamId;
@@ -1430,74 +1646,18 @@ async function generateReport(){
   var ps=team.participants.filter(function(p){return p.completed;});
   if(!ps.length){showNotice('Geen afgeronde deelnemers om een rapport van te genereren.','info');return;}
   closeModal('modal-team-detail');
-  var bar=document.getElementById('gen-bar');
-  bar.classList.add('visible');
-  document.getElementById('gen-bar-text').textContent='Rapport wordt gegenereerd voor '+team.name+'...';
-
-  // Load answers for all completed participants from API
-  await Promise.all(ps.map(async function(p){
-    if(!db.answers[p.id]){
-      var aRes=await fetch('/api/admin/answers/'+p.id,{headers:{'x-admin-token':adminToken}});
-      db.answers[p.id]=await aRes.json();
-    }
-  }));
-
-  var activeQs=db.questions.filter(function(q){return q.active;});
-  var qScores={},tScores={},qIndividual={};
-  activeQs.forEach(function(q){
-    var vals=ps.map(function(p){return db.answers[p.id]&&db.answers[p.id][q.id];}).filter(function(s){return s!==undefined;});
-    if(vals.length){
-      var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-      var s10=Math.round((avg/5*9+1)*10)/10;
-      qScores[q.id]=s10;
-      qIndividual[q.id]=vals;
-      if(!tScores[q.theme])tScores[q.theme]=[];
-      tScores[q.theme].push(s10);
-    }
-  });
-  var tAvgs={};
-  Object.keys(tScores).forEach(function(t){var arr=tScores[t];tAvgs[t]=Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length*10)/10;});
-  var ovals=Object.values(tAvgs);
-  var overall=ovals.length?Math.round(ovals.reduce(function(a,b){return a+b;},0)/ovals.length*10)/10:0;
-
-  // AI advice - robust indexed keys to avoid apostrophe parse issues
-  var aiAdvice={};
   try{
-    var kbCtx=(db.knowledgeBase||[]).map(function(kb){return kb.title+':\n'+kb.content;}).join('\n\n');
-    var themeKeys=Object.keys(tAvgs);
-    var themeLines=themeKeys.map(function(t,i){
-      var qs=activeQs.filter(function(q){return q.theme===t;}).map(function(q){return q.text+' ('+qScores[q.id]+')';}).join('; ');
-      return 'THEMA_'+i+' ['+t+'] ('+tAvgs[t]+'/10): '+qs;
-    }).join('\n');
-    var prompt='Je bent expert in teamontwikkeling bij Team Shapers. Schrijf voor elk thema een kort lopend stukje advies in het Nederlands.\n\n'+
-      'Schrijfstijl:\n'+
-      '- Begin met een constatering in de wij-vorm die de teamdynamiek beschrijft. Geen cijfers of scores noemen.\n'+
-      '- Sluit af met een concreet advies in algemene schrijfstijl ("Het is urgent om...", "Een goede stap is...", "Het loont om..."). Geen wij-vorm.\n'+
-      '- Schrijf als één doorlopende alinea. Geen kopjes, geen nummers, geen labels.\n'+
-      '- Maximaal 3 zinnen totaal.\n\n'+
-      (kbCtx?'Gebruik deze kennis van Team Shapers als context:\n'+kbCtx+'\n\n':'')+
-      'Team: '+team.name+' ('+org.name+'), deelnemers: '+ps.length+'\n\n'+themeLines+'\n\n'+
-      'Geef ALLEEN een JSON object terug, geen markdown:\n'+
-      '{'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"lopende alinea"';}).join(',')+'}';
-    var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:2000})});
-    var data=await resp.json();
-    var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
-    var m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-    if(m){var p=JSON.parse(m[0]);themeKeys.forEach(function(t,i){if(p['THEMA_'+i])aiAdvice[t]=p['THEMA_'+i];});}
-  }catch(e){console.error('AI:',e);}
-
-  var reportData={id:teamId,orgId:orgId,teamId:teamId,tAvgs:tAvgs,qScores:qScores,qIndividual:qIndividual,overall:overall,aiAdvice:aiAdvice,dimensions:currentDimensionsSnapshot(),generatedAt:new Date().toISOString(),participantCount:ps.length};
-  if(!db.reports)db.reports={};
-  db.reports[teamId]=reportData;
-  await fetch('/api/admin/reports',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify(reportData)});
-  bar.classList.remove('visible');
-  renderOrgs();
-  // Auto-open the report
-  currentReportTeamId=teamId;
-  document.getElementById('save-confirm').classList.remove('visible');
-  document.getElementById('report-frame').innerHTML=buildReport(org,team,db.reports[teamId],false);
-  showView('report');
-  autoResizeAllTextareas();
+    var report=await runReportGeneration({type:'team',teamId:teamId},'Rapport wordt gegenereerd voor '+team.name+'...');
+    renderOrgs();
+    currentReportTeamId=report.id;
+    document.getElementById('save-confirm').classList.remove('visible');
+    setReportToolbar(false);
+    document.getElementById('report-frame').innerHTML=buildReport(org,team,report,false);
+    showView('report');
+    autoResizeAllTextareas();
+  }catch(e){
+    showNotice(e.message||'Rapport genereren is mislukt.','warning');
+  }
 }
 
 async function generateIndividualReport(){
@@ -1506,79 +1666,19 @@ async function generateIndividualReport(){
   db.organisations.forEach(function(org){(org.teams||[]).forEach(function(team){(team.participants||[]).forEach(function(p){if(p.id===currentResultsPid){foundP=p;foundOrg=org;foundTeam=team;}});});});
   if(!foundP||!foundP.completed){showNotice('Deelnemer heeft de vragenlijst nog niet afgerond.','info');return;}
   closeModal('modal-results');
-  var bar=document.getElementById('gen-bar');
-  bar.classList.add('visible');
-  document.getElementById('gen-bar-text').textContent='Individueel rapport wordt gegenereerd voor '+foundP.firstName+'...';
-
-  // Load answers from API
-  if(!db.answers[foundP.id]){
-    var aRes=await fetch('/api/admin/answers/'+foundP.id,{headers:{'x-admin-token':adminToken}});
-    db.answers[foundP.id]=await aRes.json();
-  }
-
-  var activeQs=db.questions.filter(function(q){return q.active;});
-  var qScores={},tScores={},qIndividual={};
-  var ans=db.answers[foundP.id]||{};
-  activeQs.forEach(function(q){
-    var v=ans[q.id];
-    if(v!==undefined){
-      var s10=Math.round((v/5*9+1)*10)/10;
-      qScores[q.id]=s10;
-      qIndividual[q.id]=[v];
-      if(!tScores[q.theme])tScores[q.theme]=[];
-      tScores[q.theme].push(s10);
-    }
-  });
-  var tAvgs={};
-  Object.keys(tScores).forEach(function(t){var arr=tScores[t];tAvgs[t]=Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length*10)/10;});
-  var ovals=Object.values(tAvgs);
-  var overall=ovals.length?Math.round(ovals.reduce(function(a,b){return a+b;},0)/ovals.length*10)/10:0;
-
-  var aiAdvice=generateAiAdviceFromScores(tAvgs,qScores,activeQs,foundP.name+' ('+foundTeam.name+')',1,'jij-vorm persoonlijk');
-  aiAdvice=await aiAdvice;
-
-  var rkey='individual_'+foundP.id;
-  var reportData={id:rkey,orgId:foundOrg.id,teamId:foundTeam.id,participantId:foundP.id,participantName:foundP.name,isIndividual:true,tAvgs:tAvgs,qScores:qScores,qIndividual:qIndividual,overall:overall,aiAdvice:aiAdvice,dimensions:currentDimensionsSnapshot(),generatedAt:new Date().toISOString(),participantCount:1};
-  if(!db.reports)db.reports={};
-  db.reports[rkey]=reportData;
-  await fetch('/api/admin/reports',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify(reportData)});
-  bar.classList.remove('visible');
-  currentReportTeamId=rkey;
-  var fakeOrg={name:foundOrg.name};
-  var fakeTeam={name:foundP.name+' (individueel)'};
-  document.getElementById('save-confirm').classList.remove('visible');
-  document.getElementById('report-frame').innerHTML=buildReport(fakeOrg,fakeTeam,db.reports[rkey],false);
-  showView('report');
-  autoResizeAllTextareas();
-}
-
-async function generateAiAdviceFromScores(tAvgs,qScores,activeQs,label,count,toneHint){
-  var advice={};
   try{
-    var kbCtx=(db.knowledgeBase||[]).map(function(kb){return kb.title+':\n'+kb.content;}).join('\n\n');
-    var themeKeys=Object.keys(tAvgs);
-    var themeLines=themeKeys.map(function(t,i){
-      var qs=activeQs.filter(function(q){return q.theme===t;}).map(function(q){return q.text+' ('+qScores[q.id]+')';}).join('; ');
-      return 'THEMA_'+i+' ['+t+'] ('+tAvgs[t]+'/10): '+qs;
-    }).join('\n');
-    var prompt='Je bent expert in teamontwikkeling bij Team Shapers. Genereer voor elk thema een concreet advies in het Nederlands (2-3 zinnen, wij-vorm).\n\n'+
-      (kbCtx?'Gebruik deze kennis van Team Shapers:\n'+kbCtx+'\n\n':'')+
-      label+', deelnemers: '+count+'\n\n'+themeLines+'\n\n'+
-      'Geef ALLEEN een JSON object terug, geen markdown. Gebruik exact deze keys:\n'+
-      '{'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"advies"';}).join(',')+'}'+'\n\n'+
-      'Toon: >=7.5 bevestigen, 6-7.4 groeiruimte, <6 urgent.';
-    var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:2000})});
-    var data=await resp.json();
-    var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
-    var jsonMatch=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-    if(jsonMatch){
-      var parsed=JSON.parse(jsonMatch[0]);
-      themeKeys.forEach(function(t,i){if(parsed['THEMA_'+i])advice[t]=parsed['THEMA_'+i];});
-    }
-  }catch(e){console.error('AI advice error:',e);}
-  return advice;
+    var report=await runReportGeneration({type:'individual',participantId:foundP.id},'Individueel rapport wordt gegenereerd voor '+foundP.firstName+'...');
+    renderOrgs();
+    currentReportTeamId=report.id;
+    document.getElementById('save-confirm').classList.remove('visible');
+    setReportToolbar(false);
+    document.getElementById('report-frame').innerHTML=buildReport({name:foundOrg.name},{name:foundP.name+' (individueel)'},report,false);
+    showView('report');
+    autoResizeAllTextareas();
+  }catch(e){
+    showNotice(e.message||'Rapport genereren is mislukt.','warning');
+  }
 }
-
 function viewReport(orgId,teamId){viewStoredReport(teamId);}
 function viewStoredReport(rkey){
   var report=db.reports&&db.reports[rkey];
@@ -1601,9 +1701,65 @@ function viewStoredReport(rkey){
   }
   if(!org||!team){showNotice('Organisatie niet gevonden.','warning');return;}
   document.getElementById('save-confirm').classList.remove('visible');
+  setReportToolbar(false);
   document.getElementById('report-frame').innerHTML=buildReport(org,team,report,false);
   showView('report');
   autoResizeAllTextareas();
+}
+
+// Voorbeeldrapport op basis van de huidige vragenlijst, met verzonnen antwoorden
+// van 8 deelnemers. Bedoeld om de opmaak te beoordelen zonder echte data.
+function openReportPreview(){
+  var qs=questionsInConfiguredOrder((db.questions||[]).filter(function(q){return q.active;}));
+  if(!qs.length){showNotice('Er zijn nog geen actieve vragen om een voorbeeld van te maken.','info');return;}
+  // Vaste "willekeur": dezelfde vraag geeft altijd dezelfde voorbeeldscore, zodat
+  // de preview er bij elke klik hetzelfde uitziet.
+  function seeded(str,i){
+    var h=0;
+    for(var c=0;c<str.length;c++){h=(h*31+str.charCodeAt(c))>>>0;}
+    return ((h+i*2654435761)>>>0)%1000/1000;
+  }
+  var PARTICIPANTS=8;
+  var qScores={},qIndividual={},tSum={},tCount={},total=0,totalCount=0;
+  qs.forEach(function(q,qi){
+    var key=String(q.id||q.text||qi);
+    var base=2+Math.round(seeded(key,1)*3);                 // 2 t/m 5 op de 1-5 schaal
+    var spread=seeded(key,2)<.35?0:(seeded(key,3)<.6?1:2);  // soms eensgezind, soms verdeeld
+    var indiv=[];
+    for(var p=0;p<PARTICIPANTS;p++){
+      var v=base+Math.round((seeded(key,4+p)*2-1)*spread);
+      indiv.push(Math.min(5,Math.max(1,v)));
+    }
+    var avg=indiv.reduce(function(a,b){return a+b;},0)/indiv.length;
+    var score=Math.round(avg*2*10)/10;                      // 1-5 → 0-10
+    qScores[q.id]=score;
+    qIndividual[q.id]=indiv;
+    tSum[q.theme]=(tSum[q.theme]||0)+score;
+    tCount[q.theme]=(tCount[q.theme]||0)+1;
+    total+=score;totalCount++;
+  });
+  var tAvgs={};
+  Object.keys(tSum).forEach(function(t){tAvgs[t]=Math.round(tSum[t]/tCount[t]*10)/10;});
+  var report={
+    overall:Math.round(total/totalCount*10)/10,
+    tAvgs:tAvgs,qScores:qScores,qIndividual:qIndividual,
+    participantCount:PARTICIPANTS,aiAdvice:{},
+    questions:qs,dimensions:currentDimensionsSnapshot()||undefined
+  };
+  currentReportTeamId=null;
+  document.getElementById('save-confirm').classList.remove('visible');
+  document.getElementById('report-frame').innerHTML=
+    buildReport({name:'Voorbeeld Organisatie'},{name:'Voorbeeldteam'},report,true);
+  setReportToolbar(true);
+  showView('report');
+}
+
+// In een preview valt er niets op te slaan of te delen; alleen PDF blijft nuttig.
+function setReportToolbar(isPreview){
+  document.querySelectorAll('#view-report .report-toolbar-right .btn').forEach(function(b){
+    var pdf=b.getAttribute('onclick')==='downloadReportPdf()';
+    b.style.display=(isPreview&&!pdf)?'none':'';
+  });
 }
 
 function downloadReportPdf(){
@@ -1614,25 +1770,48 @@ function downloadReportPdf(){
   document.querySelectorAll('style').forEach(function(s){if(!s.textContent.includes('app-toast'))styles+=s.outerHTML;});
   var w=window.open('','_blank','width=900,height=700');
   if(!w){showNotice('Pop-up geblokkeerd door de browser. Sta pop-ups toe voor deze pagina.','warning');return;}
-  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rapport</title>'+
+  var title='Team APK Rapport';
+  w.document.write('<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>'+title+'</title>'+
     styles+
     '<style>'+
+    'body{background:white;margin:0;padding:0;}'+
     '@media print{'+
-    '  @page{margin:12mm 14mm;size:A4;}'+
+    '  @page{margin:12mm 10mm;size:A4;}'+
+    // Achtergrondkleuren (score-badges, grijze vlakken, spreidingsbanden) moeten
+    // meegeprint worden; zonder dit maakt de browser er wit van.
+    '  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}'+
     '  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
-    '  .rpt-header{position:running(header);break-inside:avoid;}'+
-    '  .rpt-footer{break-inside:avoid;page-break-inside:avoid;}'+
+    // Papier is smaller dan het scherm: alle horizontale marges krimpen mee.
+    '  .rpt-header{padding:14px 20px;}'+
+    '  .rpt-cover-page{padding:24px 20px 20px !important;}'+
+    '  .rpt-overview{padding:0 20px 16px !important;}'+
+    '  .rpt-legend{padding:0 20px !important;}'+
+    '  .rpt-ov-wrap{padding:0 20px !important;}'+
+    '  .rpt-body{padding:0 20px;}'+
+    '  .rpt-footer{padding:12px 20px;}'+
+    // Niets mag halverwege een regel, kaart of kop worden afgekapt.
+    '  .rpt-q-block,.rpt-ov-row,.rpt-dim-card,.rpt-legend-row,.rpt-theme-header,.rpt-ai-box{break-inside:avoid;page-break-inside:avoid;}'+
     '  .rpt-section{break-inside:avoid;page-break-inside:avoid;}'+
-    '  .rpt-theme-header{break-inside:avoid;page-break-inside:avoid;break-after:avoid;page-break-after:avoid;}'+
-    '  .rpt-q-block{break-inside:avoid;page-break-inside:avoid;}'+
-    '  .rpt-ai-box{break-inside:avoid;page-break-inside:avoid;}'+
-    '  .rpt-body{padding:0 14mm;}'+
-    '  h2,h3{break-after:avoid;page-break-after:avoid;}'+
+    '  .rpt-ov-group{break-inside:avoid;page-break-inside:avoid;}'+
+    '  .rpt-footer{break-inside:avoid;page-break-inside:avoid;}'+
+    // Een kop blijft altijd bij wat eronder staat.
+    '  h1,h2,h3,.rpt-group-head,.rpt-ov-group-head{break-after:avoid;page-break-after:avoid;}'+
+    // Grijze groepsvlakken mogen wél over een paginagrens lopen (ze zijn vaak
+    // langer dan een pagina), maar beginnen liefst op een nieuwe pagina.
+    '  .rpt-group{break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always;}'+
+    // De kop van een groep mag nooit los van zijn eerste kaart achterblijven.
+    '  .rpt-group-head{break-inside:avoid;page-break-inside:avoid;break-after:avoid;page-break-after:avoid;}'+
+    // Het overzicht start op een eigen pagina, na de cover.
+    '  .rpt-overview{break-before:page;page-break-before:always;}'+
+    '  p,li{orphans:3;widows:3;}'+
     '}'+
-    'body{background:white;margin:0;padding:0;}</style>'+
-    '</head><body>'+frame.innerHTML+'</body></html>');
+    '</style>'+
+    '</head><body>'+frame.innerHTML+
+    // Pas printen als de opmaak en het logo geladen zijn; een vaste wachttijd
+    // leverde soms een lege of half opgemaakte PDF op.
+    '<script>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},250);});<\/script>'+
+    '</body></html>');
   w.document.close();
-  setTimeout(function(){w.focus();w.print();},800);
 }
 function backFromReport(){showView('admin');adminTab('organisations');}
 
@@ -1648,33 +1827,31 @@ async function saveReportEdits(){
   document.querySelectorAll('.rpt-ai-text').forEach(function(ta){
     var theme=ta.dataset.theme;if(theme)report.aiAdvice[theme]=ta.value;
   });
-  await fetch('/api/admin/reports',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify(Object.assign({id:currentReportTeamId},report))});
-  var sc=document.getElementById('save-confirm');
-  sc.classList.add('visible');
-  setTimeout(function(){sc.classList.remove('visible');},3000);
+  try{
+    await api('/api/admin/reports',{method:'POST',admin:true,body:Object.assign({id:currentReportTeamId},report)});
+    var sc=document.getElementById('save-confirm');
+    sc.classList.add('visible');
+    setTimeout(function(){sc.classList.remove('visible');},3000);
+  }catch(e){
+    showNotice(e.message||'Opslaan is mislukt. Je wijzigingen zijn nog niet bewaard.','warning');
+  }
 }
 
+// The server only writes the new advice once the AI actually returned text, so
+// a failed regeneration leaves the existing advice untouched.
 async function regenAdvice(theme,customPrompt){
   var report=db.reports&&db.reports[currentReportTeamId];if(!report)return;
-  var org=db.organisations.find(function(o){return o.id===report.orgId;});
-  var team=org.teams.find(function(t){return t.id===report.teamId;});
-  var activeQs=db.questions.filter(function(q){return q.active&&q.theme===theme;});
-  var qLines=activeQs.map(function(q){return '"'+q.text+'" ('+( report.qScores[q.id]||0)+')';}).join(', ');
-  var kbCtx=(db.knowledgeBase||[]).map(function(kb){return kb.title+':\n'+kb.content;}).join('\n\n');
-  var prompt='Je bent expert in teamontwikkeling bij Team Shapers. Genereer een concreet advies voor het thema "'+theme+'" in het Nederlands.\n\n'+
-    (kbCtx?'Gebruik deze kennis:\n'+kbCtx+'\n\n':'')+
-    'Thema: '+theme+' (score: '+report.tAvgs[theme]+'/10)\nVragen: '+qLines+'\n\n'+
-    (customPrompt?'Aanvullende instructie: '+customPrompt+'\n\n':'')+
-    'Geef ALLEEN de adviestekst terug (geen JSON, geen headers), 2-4 zinnen in wij-vorm.';
   try{
-    var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:500})});
-    var data=await resp.json();
-    var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'';
-    report.aiAdvice[theme]=txt.trim();
-    await fetch('/api/admin/reports',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify(Object.assign({id:currentReportTeamId},report))});
-    var ta=document.querySelector('.rpt-ai-text[data-theme="'+theme+'"]');
-    if(ta){ta.value=txt.trim();ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
-  }catch(e){console.error('regen:',e);}
+    var result=await api('/api/admin/reports/'+encodeURIComponent(currentReportTeamId)+'/advice',{
+      method:'POST',admin:true,body:{theme:theme,customPrompt:customPrompt||null}
+    });
+    report.aiAdvice=report.aiAdvice||{};
+    report.aiAdvice[theme]=result.advice;
+    var ta=document.querySelector('.rpt-ai-text[data-theme="'+theme.replace(/"/g,'\\"')+'"]');
+    if(ta){ta.value=result.advice;ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
+  }catch(e){
+    showNotice(e.message||'Advies genereren is mislukt. Het bestaande advies is ongewijzigd.','warning');
+  }
 }
 
 // Default dimension structure — fallback for legacy reports without a snapshot.
@@ -1687,17 +1864,64 @@ var DEFAULT_DIMENSIONS=[
 // Build a dimension snapshot from the current admin DB (dimensions + theme→dimension map).
 function currentDimensionsSnapshot(){
   if(!db.dimensions||!db.dimensions.length)return null;
+  // Volgorde van de subthema's volgt db.themes — dezelfde volgorde als in de
+  // vragenlijst-beheerpagina, zodat het rapport het dashboard spiegelt.
   return db.dimensions.map(function(d){
-    var themes=Object.keys(db.themeDim||{}).filter(function(t){return db.themeDim[t]===d.name;});
+    var themes=(db.themes||[]).filter(function(t){return (db.themeDim||{})[t]===d.name;});
     return {name:d.name,description:d.description||'',themes:themes};
   });
 }
-// Decide which dimension structure a report should render with.
+// Reports store the questions they were generated from. Shared reports are read
+// by visitors who never load db.questions, so without the snapshot their
+// question rows and spread bars would silently render empty.
+// Een rapport is een momentopname: het toont de vragen, thema-indeling en
+// volgorde zoals die golden toen het gegenereerd werd. Latere wijzigingen in de
+// vragenlijst veranderen dus niets aan bestaande rapporten. De huidige indeling
+// wordt alleen gebruikt bij oude rapporten zonder eigen momentopname.
+function reportQuestions(report){
+  if(report&&Array.isArray(report.questions)&&report.questions.length)return report.questions;
+  return (db.questions||[]).filter(function(q){return q.active;});
+}
 function resolveReportDimensions(report){
   if(report&&Array.isArray(report.dimensions)&&report.dimensions.length)return report.dimensions;
   var live=currentDimensionsSnapshot();
   if(live&&live.length)return live;
   return DEFAULT_DIMENSIONS;
+}
+// Subthema-overzicht, gegroepeerd per Team Shapers Thema. Zowel de groepen als de
+// subthema's daarbinnen volgen de volgorde uit het dashboard; subthema's zonder
+// hoofdthema komen als laatste groep.
+function themeOverviewGroupsHTML(report,dimList){
+  function rowsHTML(themes){
+    return themes.map(function(theme,i){
+      var ts=report.tAvgs[theme];
+      var col=scoreColor(ts);
+      var qs=reportQuestions(report).filter(function(q){return q.theme===theme;});
+      var allIndiv=[];
+      qs.forEach(function(q){var iv=report.qIndividual&&report.qIndividual[q.id];if(iv)allIndiv=allIndiv.concat(iv);});
+      return '<div class="rpt-ov-row" style="display:flex;align-items:center;padding:11px 0;'+(i?'border-top:1px solid var(--gray-border);':'')+'gap:12px;">'+
+        '<div style="font-size:14px;color:var(--black);width:220px;font-family:var(--font)">'+esc(theme)+'</div>'+
+        '<div style="flex:1">'+buildSpreadBar(allIndiv,ts)+'</div>'+
+        '<div class="rpt-score-num" style="color:'+col+'">'+ts+'</div></div>';
+    }).join('');
+  }
+  function groupHTML(title,themes){
+    if(!themes.length)return '';
+    return '<div class="rpt-ov-group" style="margin-bottom:22px;">'+
+      '<div class="rpt-ov-group-head" style="font-size:18px;font-weight:700;color:var(--black);margin-bottom:8px;font-family:var(--font)">'+esc(title)+'</div>'+
+      rowsHTML(themes)+'</div>';
+  }
+  var seen={},html='';
+  dimList.forEach(function(d){
+    var themes=(d.themes||[]).filter(function(t){
+      if(report.tAvgs[t]===undefined||seen[t])return false;
+      seen[t]=true;return true;
+    });
+    html+=groupHTML(d.name,themes);
+  });
+  var rest=Object.keys(report.tAvgs).filter(function(t){return !seen[t];});
+  html+=groupHTML('Overige subthema\'s',rest);
+  return html;
 }
 function buildReport(org,team,report,readonly){
   var today=new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
@@ -1719,28 +1943,28 @@ function buildReport(org,team,report,readonly){
 
   // ── COVER PAGE ─────────────────────────────────────
   var coverHTML=
-    '<div style="padding:56px 48px 48px;background:white;">'+
-    '<h1 style="font-size:34px;font-weight:700;color:var(--black);margin-bottom:8px;font-family:var(--font)">Teambelevingsonderzoek</h1>'+
-    '<p style="font-size:15px;color:var(--gray-mid);margin-bottom:36px;font-family:var(--font)">'+team.name+' &bull; '+org.name+'</p>'+
+    '<div class="rpt-cover-page" style="padding:56px 48px 24px;background:white;">'+
+    '<h1 style="font-size:34px;font-weight:700;color:var(--black);margin-bottom:8px;font-family:var(--font)">Team APK Rapport</h1>'+
+    '<div style="margin-bottom:36px;display:flex;flex-direction:column;gap:5px;">'+
+    [['Team',esc(team.name)],['Organisatie',esc(org.name)],['Datum',today]].map(function(r){
+      return '<div style="font-size:14px;font-family:var(--font)">'+
+        '<span style="color:var(--gray-mid);display:inline-block;min-width:100px">'+r[0]+'</span>'+
+        '<span style="color:var(--gray-mid);font-weight:600">'+r[1]+'</span></div>';
+    }).join('')+
+    '</div>'+
     '<div style="display:flex;align-items:flex-start;gap:48px;">'+
     // Left: score + intro text
     '<div style="flex:1">'+
-    '<h2 style="font-size:17px;font-weight:700;color:var(--gray-mid);margin-bottom:12px;font-family:var(--font)">Hoe staat jouw team ervoor?</h2>'+
-    '<p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:14px;font-family:var(--font)">Voor je ligt de rapportage van een Team Shapers TeamBelevingsonderzoek. Een momentopname van de beelden en ervaringen van jou en je teamleden.</p>'+
-    '<p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:24px;font-family:var(--font)">Deze rapportage is geen eindpunt, maar juist een start om vanuit in gesprek te gaan. Het biedt je inzicht in overeenkomsten en verschillen in beleving.</p>'+
-    '<h2 style="font-size:17px;font-weight:700;color:var(--gray-mid);margin-bottom:10px;font-family:var(--font)">Legenda</h2>'+
-    '<div style="max-width:260px">'+
-    '<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--gray-border)"><div style="width:100px;height:7px;border-radius:3px;background:#0F9F69;flex-shrink:0"></div><span style="font-size:12px;font-family:var(--font)">Geheel mee eens</span></div>'+
-    '<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--gray-border)"><div style="width:100px;height:7px;border-radius:3px;background:#8DC63F;flex-shrink:0"></div><span style="font-size:12px;font-family:var(--font)">Mee eens</span></div>'+
-    '<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--gray-border)"><div style="width:100px;height:7px;border-radius:3px;background:#EDB833;flex-shrink:0"></div><span style="font-size:12px;font-family:var(--font)">Neutraal</span></div>'+
-    '<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid var(--gray-border)"><div style="width:100px;height:7px;border-radius:3px;background:#F47B20;flex-shrink:0"></div><span style="font-size:12px;font-family:var(--font)">Mee oneens</span></div>'+
-    '<div style="display:flex;align-items:center;gap:12px;padding:6px 0"><div style="width:100px;height:7px;border-radius:3px;background:#E63946;flex-shrink:0"></div><span style="font-size:12px;font-family:var(--font)">Geheel mee oneens</span></div>'+
-    '</div></div>'+
+    '<h2 style="font-size:22px;font-weight:700;color:var(--black);margin-bottom:22px;font-family:var(--font)">Hoe staat jouw team ervoor?</h2>'+
+    '<p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:14px;font-family:var(--font)">Voor je ligt de rapportage van de Team APK. Geen oordeel en geen eindconclusie, maar een spiegel van hoe jullie naar de samenwerking kijken.</p>'+
+    '<p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:14px;font-family:var(--font)">De uitkomsten laten zien waar jullie op &eacute;&eacute;n lijn zitten, en waar de beelden uit elkaar lopen. Juist daar wordt het interessant. Want daar ontstaat vaak ruis: in afspraken, eigenaarschap, verwachtingen of opvolging.</p>'+
+    '<p style="font-size:13px;color:#555;line-height:1.75;font-family:var(--font)">Gebruik deze rapportage als startpunt voor het echte gesprek: wat herkennen we, wat vraagt aandacht en wat gaan we anders doen?</p>'+
+    '</div>'+
     // Right: big score circle
     '<div style="display:flex;flex-direction:column;align-items:center;padding-top:8px">'+
-    '<div style="width:120px;height:120px;border-radius:50%;background:var(--purple);color:white;font-size:40px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(124,48,156,.3);font-family:var(--font)">'+report.overall+'</div>'+
+    '<div style="width:120px;height:120px;border-radius:22px;background:var(--purple);color:white;font-size:40px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(124,48,156,.3);font-family:var(--font)">'+report.overall+'</div>'+
     '<div style="font-size:11px;color:var(--gray-mid);margin-top:9px;text-transform:uppercase;letter-spacing:.06em;text-align:center;font-family:var(--font)">Algehele score</div>'+
-    (done?'<div style="font-size:11px;color:var(--gray-mid);margin-top:4px;text-align:center;font-family:var(--font)">'+done+' deelnemer'+(done!==1?'s':'')+' ingevuld</div>':'')+
+    (done?'<div style="font-size:11px;color:var(--gray-mid);margin-top:4px;text-align:center;font-family:var(--font)">'+done+' deelnemer'+(done!==1?'s':'')+'</div>':'')+
     '</div></div></div>';
 
   // ── DIMENSIONS OVERVIEW ────────────────────────────
@@ -1749,39 +1973,40 @@ function buildReport(org,team,report,readonly){
   var dimMap={},dimDescMap={};
   dimList.forEach(function(d){dimMap[d.name]=d.themes;dimDescMap[d.name]=d.description||'';});
 
-  var dimHTML=dimList.length?('<div style="padding:32px 48px;border-bottom:1px solid var(--gray-border);">'+
-    '<h2 style="font-size:22px;font-weight:700;color:var(--black);margin-bottom:20px;font-family:var(--font)">Dimensies</h2>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">'+
+  var dimHTML=dimList.length?('<div class="rpt-overview" style="padding:24px 48px 28px;">'+
+    '<h2 style="font-size:22px;font-weight:700;color:var(--black);margin-bottom:22px;font-family:var(--font)">Team Shapers Thema\'s</h2>'+
+    '<div class="rpt-dim-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">'+
     Object.keys(dimMap).map(function(dim){
       var dvals=dimMap[dim].map(function(t){return report.tAvgs[t];}).filter(Boolean);
       var score=dvals.length?Math.round(dvals.reduce(function(a,b){return a+b;},0)/dvals.length*10)/10:0;
       var col=scoreColor(score);
-      return '<div style="background:var(--gray-bg);border-radius:12px;padding:16px 20px;">'+
-        '<div style="font-size:26px;font-weight:700;color:'+col+';font-family:var(--font);margin-bottom:4px">'+score+'</div>'+
-        '<div style="font-size:14px;font-weight:700;color:var(--black);font-family:var(--font);margin-bottom:6px">'+dim+'</div>'+
-        '<div style="font-size:11px;color:var(--gray-mid);font-family:var(--font);line-height:1.5">'+dimDescMap[dim]+'</div></div>';
+      var pale=score>=7.5?'var(--green-pale)':score>=6?'var(--yellow-pale)':'#FEF0F1';
+      var colTxt=score>=7.5?'var(--green)':score>=6?'#9A6B00':'#E63946';
+      return '<div class="rpt-dim-card" style="background:#F5F5F5;border-radius:14px;padding:18px 20px;">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">'+
+        '<div style="font-size:15px;font-weight:700;color:var(--black);font-family:var(--font)">'+esc(dim)+'</div>'+
+        '<div style="background:'+pale+';color:'+colTxt+';width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;font-family:var(--font)">'+score+'</div>'+
+        '</div>'+
+        '<div style="font-size:13.5px;color:var(--gray-mid);font-family:var(--font);line-height:1.55">'+esc(dimDescMap[dim])+'</div></div>';
     }).join('')+
     '</div>'+
-    // theme bars overview
+    // legenda links uitgelijnd met de linkerrand van de tabel eronder (box-padding 32px)
+    '<div class="rpt-legend" style="padding:0 32px;">'+
+    '<div style="max-width:460px;margin-bottom:44px;">'+
+    '<h2 style="font-size:11px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.1em;margin:48px 0 10px;font-family:var(--font)">Legenda</h2>'+
+    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-band" style="left:64%;width:26%;background:var(--green)"></div><div class="rpt-spread-avg" style="left:78%;background:var(--green);box-shadow:0 0 0 1px var(--green)"></div></div><span style="font-size:12px;font-family:var(--font)">Smalle band: er is een hoge mate van consensus in het team</span></div>'+
+    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-band" style="left:20%;width:70%;background:var(--yellow)"></div><div class="rpt-spread-avg" style="left:60%;background:var(--yellow);box-shadow:0 0 0 1px var(--yellow)"></div></div><span style="font-size:12px;font-family:var(--font)">Brede band: de beleving loopt uiteen</span></div>'+
+    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-avg" style="left:75%;background:var(--purple);box-shadow:0 0 0 1px var(--purple)"></div></div><span style="font-size:12px;font-family:var(--font)">Stip: de gemiddelde teamscore</span></div>'+
+    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-ind" style="left:30%;background:var(--purple)"></div><div class="rpt-spread-ind" style="left:52%;background:var(--purple)"></div><div class="rpt-spread-ind" style="left:70%;background:var(--purple)"></div><div class="rpt-spread-ind" style="left:84%;background:var(--purple)"></div></div><span style="font-size:12px;font-family:var(--font)">Lichte stippen: antwoorden van de afzonderlijke deelnemers</span></div>'+
+    '</div></div>'+
 
-    Object.keys(report.tAvgs).map(function(theme){
-      var ts=report.tAvgs[theme];
-      var col=scoreColor(ts);
-      // get all individual answers for this theme
-      var activeQs=db.questions.filter(function(q){return q.active&&q.theme===theme;});
-      var allIndiv=[];
-      activeQs.forEach(function(q){var iv=report.qIndividual&&report.qIndividual[q.id];if(iv)allIndiv=allIndiv.concat(iv);});
-      var bar=allIndiv.length?buildSpreadBar(allIndiv):'<div class="rpt-spread-bars"><div style="height:100%;width:'+(ts*10)+'%;background:'+col+'"></div></div>';
-      return '<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-border);gap:12px;">'+
-        '<div style="font-size:12px;color:var(--black);width:180px;font-family:var(--font)">'+theme+'</div>'+
-        '<div style="flex:1">'+bar+'</div>'+
-        '<div style="width:40px;height:40px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:white;font-family:var(--font);flex-shrink:0">'+ts+'</div></div>';
-    }).join('')+
-    '</div>'):'';
+    '<div class="rpt-ov-wrap" style="padding:0 32px;">'+
+    themeOverviewGroupsHTML(report,dimList)+
+    '</div></div>'):'';
 
-  // ── PER THEME SECTIONS (flat, one per theme) ──────────────
-  var activeQs=db.questions.filter(function(q){return q.active;});
-  var themeHTML=Object.keys(report.tAvgs).map(function(theme){
+  // ── PER THEME SECTIONS (één per subthema, in dashboardvolgorde) ──────────────
+  var activeQs=reportQuestions(report);
+  function themeBlockHTML(theme){
     var ts=report.tAvgs[theme];
     var col=scoreColor(ts);
     var qs=activeQs.filter(function(q){return q.theme===theme;});
@@ -1791,47 +2016,77 @@ function buildReport(org,team,report,readonly){
       var s=report.qScores[q.id]||0;
       var indiv=report.qIndividual&&report.qIndividual[q.id]||[];
       var sc=scoreColor(s);
-      var bar=indiv.length?buildSpreadBar(indiv):'<div class="rpt-spread-bars"><div style="height:100%;width:'+(s*10)+'%;background:'+sc+'"></div></div>';
+      var bar=buildSpreadBar(indiv,s);
       return '<div class="rpt-q-block">'+
-        '<div class="rpt-q-label">'+q.text+'</div>'+
+        '<div class="rpt-q-label">'+esc(q.text)+'</div>'+
         '<div class="rpt-q-right">'+bar+
-        '<div style="width:36px;height:36px;border-radius:50%;background:'+sc+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:white;font-family:var(--font);flex-shrink:0">'+s+'</div>'+
+        '<div class="rpt-score-num" style="color:'+sc+'">'+s+'</div>'+
         '</div></div>';
     }).join('');
 
+    // AI output is never trusted as markup: it is text, and it is escaped both
+    // in the read-only paragraph and inside the editable textarea.
     var adv=(report.aiAdvice&&report.aiAdvice[theme])||'';
     var aiBox='<div class="rpt-ai-box" style="display:none">'+
       '<div class="rpt-ai-label">Team Shapers advies</div>'+
       (readonly
-        ? '<p style="font-size:13px;color:#444;line-height:1.7;font-family:var(--font)">'+adv+'</p>'
-        : '<textarea class="rpt-ai-text" data-theme="'+theme+'">'+adv+'</textarea>'
+        ? '<p style="font-size:13px;color:#444;line-height:1.7;font-family:var(--font)">'+esc(adv)+'</p>'
+        : '<textarea class="rpt-ai-text" data-theme="'+esc(theme)+'">'+esc(adv)+'</textarea>'
       )+'</div>';
 
-    return '<div class="rpt-section" style="padding-top:20px;border-top:1px solid var(--gray-border);">'+
+    var pale=ts>=7.5?'var(--green-pale)':ts>=6?'var(--yellow-pale)':'#FEF0F1';
+    var colTxt=ts>=7.5?'var(--green)':ts>=6?'#9A6B00':'#E63946';
+    return '<div class="rpt-section" style="background:white;border-radius:12px;padding:24px 26px;margin-bottom:16px;">'+
       '<div class="rpt-theme-header">'+
-      '<div class="rpt-theme-score" style="color:'+col+'">'+ts+'</div>'+
-      '<div class="rpt-theme-info"><h3>'+theme+'</h3><p>'+desc+'</p></div>'+
-      '<div style="margin-left:auto;font-size:10px;color:var(--gray-mid);text-align:right;min-width:52px;font-family:var(--font)">gemiddelde<br>score</div></div>'+
+      '<div class="rpt-theme-info">'+
+      '<h3>'+esc(theme)+'</h3><p>'+esc(desc)+'</p></div>'+
+      '<div style="margin-left:auto;position:relative;flex-shrink:0;">'+
+      '<div class="rpt-theme-score" style="background:'+pale+';color:'+colTxt+';width:66px;height:66px;min-width:0;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;">'+ts+'</div>'+
+      // buiten de flow, zodat de titel links precies op de badge uitlijnt
+      '<div style="position:absolute;top:100%;right:0;white-space:nowrap;font-size:12px;color:var(--gray-mid);margin-top:7px;font-family:var(--font)">gemiddelde score</div>'+
+      '</div></div>'+
       qRows+aiBox+'</div>';
-  }).join('');
+  }
+  // Subthema's van hetzelfde Team Shapers Thema staan samen op één grijs vlak,
+  // met de naam van dat thema eenmalig bovenaan.
+  function themeGroupHTML(title,themes){
+    if(!themes.length)return '';
+    return '<div class="rpt-group" style="background:#F5F5F5;border-radius:16px;padding:28px 24px 12px;margin-bottom:32px;">'+
+      '<div class="rpt-group-head" style="padding:0 2px 30px;">'+
+      '<div style="font-size:11px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-family:var(--font)">Team Shapers Thema</div>'+
+      '<div style="font-size:21px;font-weight:700;color:var(--black);font-family:var(--font)">'+esc(title)+'</div>'+
+      '</div>'+
+      themes.map(themeBlockHTML).join('')+
+      '</div>';
+  }
+  var themeHTML='',grouped={};
+  dimList.forEach(function(d){
+    var themes=(d.themes||[]).filter(function(t){
+      if(report.tAvgs[t]===undefined||grouped[t])return false;
+      grouped[t]=true;return true;
+    });
+    themeHTML+=themeGroupHTML(d.name,themes);
+  });
+  themeHTML+=themeGroupHTML('Overige subthema\'s',Object.keys(report.tAvgs).filter(function(t){return !grouped[t];}));
 
     return '<div class="rpt-page">'+
     '<div class="rpt-header"><img src="'+LOGO_WIT+'" alt="Team Shapers">'+
-    '<div class="rpt-meta">TeamBelevingsonderzoek<br>'+org.name+' &bull; '+team.name+'</div></div>'+
+    '<div class="rpt-meta">Team APK Rapport<br>'+esc(org.name)+' &bull; '+esc(team.name)+'</div></div>'+
     coverHTML+
     dimHTML+
     '<div class="rpt-body">'+themeHTML+'</div>'+
     '<div class="rpt-footer">'+
+    '<img src="'+LOGO_WIT+'" alt="Team Shapers">'+
     '<div class="rpt-footer-meta">'+
     '<div class="rpt-footer-item">'+
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'+
-    (report.isIndividual?report.participantName:team.name)+'</div>'+
+    esc(report.isIndividual?report.participantName:team.name)+'</div>'+
     '<div class="rpt-footer-item">'+
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>'+
-    org.name+'</div>'+
+    esc(org.name)+'</div>'+
     '<div class="rpt-footer-item">'+
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'+
-    'Geprint op '+today+'</div>'+
+    'Gegenereerd op '+today+'</div>'+
     '<div class="rpt-footer-item">'+
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'+
     'Response: '+report.participantCount+' deelnemer(s)</div>'+
@@ -1847,23 +2102,22 @@ function openShareModalFor(teamId){
   document.getElementById('share-link-result').style.display='none';
   openModal('modal-share');
 }
-function createShareLink(){
+// The server builds the shared snapshot from the stored report and issues the
+// token, so the link's contents are not dictated by the browser.
+async function createShareLink(){
   var pwd=document.getElementById('share-pwd').value.trim();if(!pwd)return;
-  var shareId=uid();
-  var teamId=shareTeamId,org=null,team=null;
-  db.organisations.forEach(function(o){(o.teams||[]).forEach(function(t){if(t.id===teamId){org=o;team=t;}});});
-  var report=db.reports&&db.reports[teamId];
-  if(!report||!team){alert('Rapport niet gevonden.');return;}
-  fetch('/api/shared-reports',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:shareId,password:pwd,reportData:{org:org,team:team,report:report}})})
-    .then(function(r){return r.json();})
-    .then(function(){
-      var link=location.origin+location.pathname+'?share='+shareId;
-      var box=document.getElementById('share-link-box');
-      box.textContent=link;
-      box.onclick=function(){navigator.clipboard.writeText(link).catch(function(){});box.textContent='Gekopieerd!';setTimeout(function(){box.textContent=link;},2000);};
-      document.getElementById('share-link-result').style.display='block';
-    })
-    .catch(function(){alert('Fout bij aanmaken link.');});
+  var report=db.reports&&db.reports[shareTeamId];
+  if(!report){showNotice('Rapport niet gevonden.','warning');return;}
+  try{
+    var result=await api('/api/admin/shared-reports',{method:'POST',admin:true,body:{reportId:shareTeamId,password:pwd}});
+    var link=location.origin+location.pathname+'?share='+encodeURIComponent(result.token);
+    var box=document.getElementById('share-link-box');
+    box.textContent=link;
+    box.onclick=function(){navigator.clipboard.writeText(link).catch(function(){});box.textContent='Gekopieerd!';setTimeout(function(){box.textContent=link;},2000);};
+    document.getElementById('share-link-result').style.display='block';
+  }catch(e){
+    showNotice(e.message||'Deellink aanmaken is mislukt.','warning');
+  }
 }
 var pendingShareId=null;
 function checkShareParam(){
@@ -1871,23 +2125,53 @@ function checkShareParam(){
   var shareId=params.get('share');if(!shareId)return;
   pendingShareId=shareId;showView('shared-report');
 }
-function submitSharePwd(){
+// POST, not a query string: a password in the URL ends up in server logs,
+// proxy logs and browser history.
+async function submitSharePwd(){
   var pwd=document.getElementById('share-pwd-input').value;
-  fetch('/api/reports/shared/'+pendingShareId+'?pwd='+encodeURIComponent(pwd))
-    .then(function(r){return r.json();})
-    .then(function(data){
-      if(data.error){document.getElementById('share-pwd-error').style.display='block';return;}
-      document.getElementById('share-pwd-error').style.display='none';
-      var d=data.data;
-      document.getElementById('shared-login-wrap').style.display='none';
-      document.getElementById('shared-report-content').style.display='block';
-      document.getElementById('shared-report-frame').innerHTML=buildReport(d.org,d.team,d.report,true);
-    })
-    .catch(function(){document.getElementById('share-pwd-error').style.display='block';});
+  try{
+    var data=await api('/api/reports/shared/'+encodeURIComponent(pendingShareId),{method:'POST',body:{password:pwd}});
+    var d=data.data;
+    if(!d){document.getElementById('share-pwd-error').style.display='block';return;}
+    document.getElementById('share-pwd-error').style.display='none';
+    document.getElementById('shared-login-wrap').style.display='none';
+    document.getElementById('shared-report-content').style.display='block';
+    document.getElementById('shared-report-frame').innerHTML=buildReport(d.org,d.team,d.report,true);
+  }catch(e){
+    document.getElementById('share-pwd-error').style.display='block';
+  }
 }
 
 // PARTICIPANT
 var currentParticipant=null,currentQIndex=0,surveyQuestions=[];
+// Preview: de vragenlijst doorlopen zoals een deelnemer hem ziet, zonder dat er
+// antwoorden of een afronding naar de server gaan.
+var surveyPreview=false;
+function openSurveyPreview(){
+  var qs=questionsInConfiguredOrder((db.questions||[]).filter(function(q){return q.active;}));
+  if(!qs.length){showNotice('Er zijn nog geen actieve vragen om een preview van te maken.','info');return;}
+  surveyPreview=true;
+  surveyQuestions=qs;
+  currentParticipant={id:'__preview__',firstName:'Voorbeeld',name:'Voorbeeld',code:null};
+  db.answers=db.answers||{};
+  db.answers['__preview__']={};
+  currentQIndex=0;
+  document.getElementById('intro-welcome').textContent='Welkom, Voorbeeld!';
+  document.getElementById('btn-close-survey-preview').style.display='';
+  document.getElementById('survey-intro').style.display='';
+  document.getElementById('survey-question').style.display='none';
+  document.getElementById('survey-complete').style.display='none';
+  showView('survey');
+  updateProgress();
+}
+function closeSurveyPreview(){
+  surveyPreview=false;
+  currentParticipant=null;
+  delete db.answers['__preview__'];
+  document.getElementById('btn-close-survey-preview').style.display='none';
+  showView('admin');
+  adminTab('questions');
+}
 async function participantLogin(){
   var code=document.getElementById('p-code').value.trim().toUpperCase();
   var err=document.getElementById('p-login-error');
@@ -1928,6 +2212,25 @@ async function participantLogin(){
 document.getElementById('p-code').addEventListener('keydown',function(e){if(e.key==='Enter')participantLogin();});
 
 // LEAD self-registration → creates a participant under the Leads org, then starts the survey
+var currentLeadLinkToken=null;
+
+// Een vaste willekeurige id per browser, zodat een refresh niet als nieuwe
+// bezoeker telt. Bevat geen persoonsgegevens.
+function visitorId(){
+  try{
+    var v=localStorage.getItem('tsVisitorId');
+    if(!v){v=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem('tsVisitorId',v);}
+    return v;
+  }catch(e){return '';}
+}
+
+function trackLeadLinkClick(token){
+  fetch('/api/lead/click/'+encodeURIComponent(token),{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({visitorId:visitorId()})
+  }).catch(function(){});
+}
+
 async function leadRegister(){
   var name=document.getElementById('lead-name').value.trim();
   var orgName=document.getElementById('lead-org').value.trim();
@@ -1935,7 +2238,7 @@ async function leadRegister(){
   if(!name||!orgName){err.style.display='block';return;}
   err.style.display='none';
   try{
-    var res=await fetch('/api/lead/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,orgName:orgName})});
+    var res=await fetch('/api/lead/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,orgName:orgName,linkToken:currentLeadLinkToken})});
     var data=await res.json();
     if(!res.ok||!data.code){err.textContent=(data&&data.error)||'Er ging iets mis. Probeer opnieuw.';err.style.display='block';return;}
     // Reuse the participant survey flow with the freshly generated code
@@ -2007,6 +2310,7 @@ function renderThemeProgress(curTheme){
 }
 
 var _answerLocked=false;
+var _lastAnswerSave=Promise.resolve();
 function selectAns(val){
   // Prevent double-tap / rapid click skipping a question
   if(_answerLocked)return;
@@ -2015,7 +2319,16 @@ function selectAns(val){
   if(!db.answers[currentParticipant.id])db.answers[currentParticipant.id]={};
   var _qid=surveyQuestions[currentQIndex].id;
   db.answers[currentParticipant.id][_qid]=val;
-  fetch('/api/answers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({participantId:currentParticipant.id,answers:{[_qid]:val}})});
+  // Tracked so completeSurvey() can wait for the last answer to land before it
+  // marks the questionnaire as finished.
+  _lastAnswerSave=surveyPreview?Promise.resolve():api('/api/answers',{method:'POST',body:{
+    participantId:currentParticipant.id,
+    code:currentParticipant.code,
+    answers:{[_qid]:val}
+  }}).catch(function(e){
+    showNotice('Dit antwoord kon niet worden opgeslagen. Controleer je verbinding.','warning');
+    throw e;
+  });
 
   // Visual feedback
   document.querySelectorAll('.likert-option').forEach(function(el,i){
@@ -2040,117 +2353,29 @@ function selectAns(val){
 
 function surveyPrev(){if(currentQIndex>0){currentQIndex--;renderQ(true);}}
 
-async function autoGenerateIndividualReport(pid){
-  try{
-    // Use in-memory db (answers already saved via /api/answers)
-    var foundP=null,foundOrg=null,foundTeam=null;
-    db.organisations.forEach(function(org){(org.teams||[]).forEach(function(team){(team.participants||[]).forEach(function(p){if(p.id===pid){foundP=p;foundOrg=org;foundTeam=team;}});});});
-    if(!foundP)return;
-    var activeQs=surveyQuestions.length?surveyQuestions:db.questions.filter(function(q){return q.active;});
-    var qScores={},tScores={},qIndividual={};
-    var ans=db.answers[foundP.id]||{};
-    activeQs.forEach(function(q){
-      var v=ans[q.id];if(v===undefined)return;
-      var s10=Math.round((v/5*9+1)*10)/10;
-      qScores[q.id]=s10;qIndividual[q.id]=[v];
-      if(!tScores[q.theme])tScores[q.theme]=[];tScores[q.theme].push(s10);
-    });
-    var tAvgs={};Object.keys(tScores).forEach(function(t){var a=tScores[t];tAvgs[t]=Math.round(a.reduce(function(x,y){return x+y;},0)/a.length*10)/10;});
-    var overall=Object.values(tAvgs).length?Math.round(Object.values(tAvgs).reduce(function(a,b){return a+b;},0)/Object.values(tAvgs).length*10)/10:0;
-    var aiAdvice={};
-    try{
-      var themeKeys=Object.keys(tAvgs);
-      var themeLines=themeKeys.map(function(t,i){
-        var qs=activeQs.filter(function(q){return q.theme===t;}).map(function(q){return q.text+' ('+qScores[q.id]+')';}).join('; ');
-        return 'THEMA_'+i+' ['+t+'] ('+tAvgs[t]+'/10): '+qs;
-      }).join('\n');
-      var prompt='Je bent expert in teamontwikkeling bij Team Shapers. Genereer voor elk thema een persoonlijk advies in het Nederlands.\n\n'+
-        'Structuur per thema:\n1. Constatering (ik-vorm): wat zeggen de scores over deze persoon.\n2. Advies van Team Shapers (algemene schrijfstijl, geen ik/wij): concreet handelingsperspectief.\n\n'+
-        'Deelnemer: '+foundP.name+', team: '+foundTeam.name+'\n\n'+themeLines+'\n\n'+
-        'Geef ALLEEN JSON: {'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"advies"';}).join(',')+'}'+'\n\nToon: >=7.5 positief, 6-7.4 groei, <6 urgent.';
-      var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:1500})});
-      var data=await resp.json();
-      var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
-      var m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-      if(m){var parsed=JSON.parse(m[0]);themeKeys.forEach(function(t,i){if(parsed['THEMA_'+i])aiAdvice[t]=parsed['THEMA_'+i];});}
-    }catch(e2){}
-    var rkey='individual_'+foundP.id;
-    var reportData={id:rkey,orgId:foundOrg.id,teamId:foundTeam.id,participantId:foundP.id,participantName:foundP.name,isIndividual:true,tAvgs:tAvgs,qScores:qScores,qIndividual:qIndividual,overall:overall,aiAdvice:aiAdvice,dimensions:currentDimensionsSnapshot(),generatedAt:new Date().toISOString(),participantCount:1};
-    if(!db.reports)db.reports={};
-    db.reports[rkey]=reportData;
-    await fetch('/api/admin/reports',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken||''},body:JSON.stringify(reportData)});
-  }catch(e){console.error('Auto individual report:',e);}
-}
-
-async function autoGenerateTeamReportIfComplete(pid){
-  try{
-    var foundTeam=null,foundOrg=null;
-    db.organisations.forEach(function(org){(org.teams||[]).forEach(function(team){(team.participants||[]).forEach(function(p){if(p.id===pid){foundTeam=team;foundOrg=org;}});});});
-    if(!foundTeam||!foundOrg)return;
-    var ps=foundTeam.participants||[];
-    var allDone=ps.length>0&&ps.every(function(p){return p.completed;});
-    if(!allDone)return;
-    // All done - auto generate team report
-    var teamId=foundTeam.id;
-    var orgId=foundOrg.id;
-    var activeQs=surveyQuestions.length?surveyQuestions:db.questions.filter(function(q){return q.active;});
-    var completedPs=ps.filter(function(p){return p.completed;});
-    // Load answers for all completed participants
-    await Promise.all(completedPs.map(async function(p){
-      if(!db.answers[p.id]){
-        // answers may not be loaded yet for other participants; skip silently
-        db.answers[p.id]={};
-      }
-    }));
-    var qScores={},tScores={},qIndividual={};
-    activeQs.forEach(function(q){
-      var vals=completedPs.map(function(p){return db.answers[p.id]&&db.answers[p.id][q.id];}).filter(function(s){return s!==undefined;});
-      if(vals.length){
-        var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-        qScores[q.id]=Math.round((avg/5*9+1)*10)/10;
-        qIndividual[q.id]=vals;
-        if(!tScores[q.theme])tScores[q.theme]=[];tScores[q.theme].push(qScores[q.id]);
-      }
-    });
-    var tAvgs={};Object.keys(tScores).forEach(function(t){var a=tScores[t];tAvgs[t]=Math.round(a.reduce(function(x,y){return x+y;},0)/a.length*10)/10;});
-    var overall=Object.values(tAvgs).length?Math.round(Object.values(tAvgs).reduce(function(a,b){return a+b;},0)/Object.values(tAvgs).length*10)/10:0;
-    var aiAdvice={};
-    try{
-      var themeKeys=Object.keys(tAvgs);
-      var themeLines=themeKeys.map(function(t,i){
-        var qs=activeQs.filter(function(q){return q.theme===t;}).map(function(q){return q.text+' ('+qScores[q.id]+')';}).join('; ');
-        return 'THEMA_'+i+' ['+t+'] ('+tAvgs[t]+'/10): '+qs;
-      }).join('\n');
-      var prompt='Je bent expert in teamontwikkeling bij Team Shapers. Genereer voor elk thema een concreet advies (2 delen: wij-vorm constatering + algemeen Team Shapers advies).\n\n'+
-        'Team: '+foundTeam.name+' ('+foundOrg.name+'), deelnemers: '+completedPs.length+'\n\n'+themeLines+'\n\n'+
-        'Geef ALLEEN JSON: {'+themeKeys.map(function(t,i){return '"THEMA_'+i+'":"advies"';}).join(',')+'}'+'\n\nToon: >=7.5 bevestigen, 6-7.4 groei, <6 urgent.';
-      var resp=await fetch('/api/ai/advice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:2000})});
-      var data=await resp.json();
-      var txt=((data.content&&data.content.find(function(b){return b.type==='text';})||{}).text)||'{}';
-      var m=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
-      if(m){var parsed=JSON.parse(m[0]);themeKeys.forEach(function(t,i){if(parsed['THEMA_'+i])aiAdvice[t]=parsed['THEMA_'+i];});}
-    }catch(e2){}
-    var reportData={id:teamId,orgId:orgId,teamId:teamId,tAvgs:tAvgs,qScores:qScores,qIndividual:qIndividual,overall:overall,aiAdvice:aiAdvice,dimensions:currentDimensionsSnapshot(),generatedAt:new Date().toISOString(),participantCount:completedPs.length};
-    if(!db.reports)db.reports={};
-    db.reports[teamId]=reportData;
-    await fetch('/api/admin/reports',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken||''},body:JSON.stringify(reportData)});
-  }catch(e){console.error('Auto team report:',e);}
-}
-
 function viewIndividualReportForPid(pid){
   var rkey='individual_'+pid;
   var report=db.reports&&db.reports[rkey];
-  if(!report){showNotice('Nog geen individueel rapport. Het wordt automatisch gegenereerd zodra de deelnemer klaar is.','info');return;}
+  if(!report){showNotice('Nog geen individueel rapport. Klik op "Genereer" om er een te maken.','info');return;}
   viewStoredReport(rkey);
 }
 
-function completeSurvey(){
+// Reports are generated by the server once this call lands, so nothing here
+// needs to (or can) build them client-side.
+async function completeSurvey(){
+  try{
+    await _lastAnswerSave.catch(function(){});
+    if(!surveyPreview)await api('/api/answers/complete',{method:'POST',body:{
+      participantId:currentParticipant.id,
+      code:currentParticipant.code
+    }});
+  }catch(e){
+    // Stay on the last question so answering it again retries, rather than
+    // showing a "klaar!" screen for a questionnaire the server never received.
+    showNotice('Afronden is niet gelukt. Kies je antwoord nogmaals om het opnieuw te proberen.','warning');
+    return;
+  }
   if(currentParticipant)currentParticipant.completed=true;
-  fetch('/api/answers/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({participantId:currentParticipant.id})});
-  // Auto-generate individual report in background
-  autoGenerateIndividualReport(currentParticipant.id);
-  // Check if ALL participants in the team are done - auto-generate team report
-  autoGenerateTeamReportIfComplete(currentParticipant.id);
   // set progress to 100%
   document.getElementById('survey-progress-fill').style.width='100%';
   document.getElementById('survey-question').style.display='none';
@@ -2203,7 +2428,7 @@ async function addTheme(){
   if(db.themes.indexOf(name)!==-1){showNotice('Dit thema bestaat al.','warning');return;}
   var dimSel=document.getElementById('input-theme-dimension');
   var dim=dimSel?dimSel.value:'';
-  await fetch('/api/admin/themes',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({name:name,dimension:dim||null})});
+  if(!await adminWrite('/api/admin/themes',{method:'POST',body:{name:name,dimension:dim||null}},'Subthema toevoegen is mislukt.'))return;
   db.themes.push(name);
   db.themeDim[name]=dim||null;
   closeModal('modal-add-theme');
@@ -2235,10 +2460,10 @@ async function saveEditTheme(){
 async function addDimension(){
   var name=document.getElementById('input-dim-name').value.trim();
   if(!name)return;
-  if(db.dimensions.some(function(d){return d.name===name;})){showNotice('Deze dimensie bestaat al.','warning');return;}
+  if(db.dimensions.some(function(d){return d.name===name;})){showNotice('Dit Team Shapers Thema bestaat al.','warning');return;}
   var desc=document.getElementById('input-dim-desc').value.trim();
   var res=await fetch('/api/admin/dimensions',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({name:name,description:desc})});
-  if(!res.ok){var e=await res.json().catch(function(){return{};});showNotice(e.error||'Fout bij toevoegen dimensie.','warning');return;}
+  if(!res.ok){var e=await res.json().catch(function(){return{};});showNotice(e.error||'Fout bij toevoegen Team Shapers Thema.','warning');return;}
   db.dimensions.push({name:name,description:desc,sortOrder:db.dimensions.length+1});
   closeModal('modal-add-dimension');
   document.getElementById('input-dim-name').value='';document.getElementById('input-dim-desc').value='';
@@ -2256,16 +2481,16 @@ async function saveEditDimension(){
   var newName=document.getElementById('edit-dim-name').value.trim();
   if(!newName)return;
   var desc=document.getElementById('edit-dim-desc').value.trim();
-  if(newName!==oldName&&db.dimensions.some(function(d){return d.name===newName;})){showNotice('Er bestaat al een dimensie met deze naam.','warning');return;}
+  if(newName!==oldName&&db.dimensions.some(function(d){return d.name===newName;})){showNotice('Er bestaat al een Team Shapers Thema met deze naam.','warning');return;}
   var res=await fetch('/api/admin/dimensions/'+encodeURIComponent(oldName),{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({name:newName,description:desc})});
-  if(!res.ok){var e=await res.json().catch(function(){return{};});showNotice(e.error||'Fout bij opslaan dimensie.','warning');return;}
+  if(!res.ok){var e=await res.json().catch(function(){return{};});showNotice(e.error||'Fout bij opslaan Team Shapers Thema.','warning');return;}
   var d=db.dimensions.find(function(x){return x.name===oldName;});if(d){d.name=newName;d.description=desc;}
   if(newName!==oldName){Object.keys(db.themeDim).forEach(function(t){if(db.themeDim[t]===oldName)db.themeDim[t]=newName;});if(window._openDims&&window._openDims[oldName]!==undefined){window._openDims[newName]=window._openDims[oldName];delete window._openDims[oldName];}}
   closeModal('modal-edit-dimension');renderQuestions();
 }
 function deleteDimension(dim){
-  confirmAction('Dimensie verwijderen','Wil je de dimensie "'+dim+'" verwijderen? De thema\'s blijven bestaan maar komen onder "Zonder dimensie" te staan.',async function(){
-    await fetch('/api/admin/dimensions/'+encodeURIComponent(dim),{method:'DELETE',headers:{'x-admin-token':adminToken}});
+  confirmAction('Team Shapers Thema verwijderen','Wil je het Team Shapers Thema "'+dim+'" verwijderen? De subthema\'s blijven bestaan maar komen onder "Zonder Team Shapers Thema" te staan.',async function(){
+    if(!await adminWrite('/api/admin/dimensions/'+encodeURIComponent(dim),{method:'DELETE'},'Team Shapers Thema verwijderen is mislukt.'))return;
     db.dimensions=db.dimensions.filter(function(d){return d.name!==dim;});
     Object.keys(db.themeDim).forEach(function(t){if(db.themeDim[t]===dim)db.themeDim[t]=null;});
     renderQuestions();
@@ -2276,7 +2501,7 @@ function deleteTheme(theme){
     'Thema verwijderen',
     'Wil je het thema "'+theme+'" verwijderen? Alle bijbehorende vragen worden ook verwijderd.',
     async function(){
-      await fetch('/api/admin/themes/'+encodeURIComponent(theme),{method:'DELETE',headers:{'x-admin-token':adminToken}});
+      if(!await adminWrite('/api/admin/themes/'+encodeURIComponent(theme),{method:'DELETE'},'Thema verwijderen is mislukt.'))return;
       db.themes=db.themes.filter(function(t){return t!==theme;});
       db.questions=db.questions.filter(function(q){return q.theme!==theme;});
       delete db.themeDim[theme];
@@ -2301,7 +2526,7 @@ function deleteParticipant(pid,pname){
     'Deelnemer verwijderen',
     'Wil je '+decodeURIComponent(pname)+' verwijderen? Alle antwoorden worden ook verwijderd.',
     async function(){
-      await fetch('/api/admin/participants/'+pid,{method:'DELETE',headers:{'x-admin-token':adminToken}});
+      if(!await adminWrite('/api/admin/participants/'+pid,{method:'DELETE'},'Deelnemer verwijderen is mislukt.'))return;
       db.organisations.forEach(function(org){
         (org.teams||[]).forEach(function(team){
           team.participants=(team.participants||[]).filter(function(p){return p.id!==pid;});
@@ -2363,12 +2588,15 @@ async function openTeamDetail(orgId,teamId){
   currentTeamForReport={orgId:orgId,teamId:teamId};
   var ps=team.participants||[];
   // Load answers for participants that haven't been loaded yet
-  await Promise.all(ps.map(async function(p){
-    if(!db.answers[p.id]){
-      var aRes=await fetch('/api/admin/answers/'+p.id,{headers:{'x-admin-token':adminToken}});
-      db.answers[p.id]=await aRes.json();
-    }
-  }));
+  try{
+    await Promise.all(ps.map(async function(p){
+      if(!db.answers[p.id]){
+        db.answers[p.id]=await api('/api/admin/answers/'+p.id,{admin:true});
+      }
+    }));
+  }catch(e){
+    showNotice(e.message||'Antwoorden konden niet geladen worden.','warning');return;
+  }
   var completed=ps.filter(function(p){return p.completed;}).length;
   document.getElementById('modal-team-title').textContent=team.name+' ('+org.name+')';
   var btn=document.getElementById('btn-generate-report');
@@ -2380,8 +2608,8 @@ async function openTeamDetail(orgId,teamId){
       var ans=db.answers[p.id]||{};
       var prog=activeQs.length?Math.round(Object.keys(ans).length/activeQs.length*100):0;
       var badge=p.completed?'<span class="badge badge-green">Afgerond</span>':p.loggedIn?'<span class="badge badge-yellow">Bezig</span>':'<span class="badge badge-gray">Niet gestart</span>';
-      return '<tr><td>'+p.name+'</td>'+
-        '<td><span class="copy-btn" data-action="copyLink" data-code="'+p.code+'" data-pid="'+p.id+'" id="mcbtn-'+p.id+'">kopieer link</span></td>'+
+      return '<tr><td>'+esc(p.name)+'</td>'+
+        '<td><span class="copy-btn" data-action="copyLink" data-code="'+esc(p.code)+'" data-pid="'+esc(p.id)+'" id="mcbtn-'+esc(p.id)+'">kopieer link</span></td>'+
         '<td>'+badge+'</td><td>'+prog+'%</td></tr>';
     }).join('')+'</tbody></table>';
   document.getElementById('modal-team-content').innerHTML=info;
@@ -2429,7 +2657,7 @@ function runSelectedAction(teamId,action){
       'Wil je de volgende deelnemers verwijderen: '+names+'?',
       function(){
         Promise.all(pids.map(async function(pid){
-          await fetch('/api/admin/participants/'+pid,{method:'DELETE',headers:{'x-admin-token':adminToken}});
+          if(!await adminWrite('/api/admin/participants/'+pid,{method:'DELETE'},'Deelnemer verwijderen is mislukt.'))return;
           db.organisations.forEach(function(org){
             (org.teams||[]).forEach(function(team){
               team.participants=(team.participants||[]).filter(function(p){return p.id!==pid;});
@@ -2535,8 +2763,8 @@ async function qDrop(e){
     db.questions.splice(lastInTheme+1,0,moved);
   }
   var order=db.questions.map(function(q,i){return {id:q.id,sortOrder:i+1,theme:q.theme};});
-  await fetch('/api/admin/questions/reorder',{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({order:order})});
-  _dragQid=null;renderQuestions();
+  _dragQid=null;
+  await persistOrder('/api/admin/questions/reorder',{order:order},'Volgorde opslaan is mislukt.');
 }
 
 // Drop on empty theme body
@@ -2565,8 +2793,8 @@ async function themebodyDrop(e){
   db.questions.forEach(function(q,i){if(q.theme===targetTheme)lastIdx=i;});
   db.questions.splice(lastIdx+1,0,moved);
   var order=db.questions.map(function(q,i){return {id:q.id,sortOrder:i+1,theme:q.theme};});
-  await fetch('/api/admin/questions/reorder',{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({order:order})});
-  _dragQid=null;renderQuestions();
+  _dragQid=null;
+  await persistOrder('/api/admin/questions/reorder',{order:order},'Volgorde opslaan is mislukt.');
 }
 
 // ── THEME DRAG & DROP ──
@@ -2637,8 +2865,8 @@ async function themeDrop(e){
   db.questions.forEach(function(q){if(newQs.indexOf(q)===-1)newQs.push(q);});
   db.questions=newQs;
   var order=db.questions.map(function(q,i){return {id:q.id,sortOrder:i+1,theme:q.theme};});
-  await fetch('/api/admin/questions/reorder',{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({order:order})});
-  _dragTheme=null;renderQuestions();
+  _dragTheme=null;
+  await persistOrder('/api/admin/questions/reorder',{order:order},'Volgorde opslaan is mislukt.');
 }
 
 // ── DIMENSION DRAG & DROP ──
@@ -2696,8 +2924,8 @@ async function dimDrop(e){
   else{insertIdx=db.dimensions.map(function(d){return d.name;}).indexOf(targetKey);if(insertIdx===-1)insertIdx=db.dimensions.length;}
   db.dimensions.splice(insertIdx,0,moved);
   var order=db.dimensions.map(function(d){return d.name;});
-  await fetch('/api/admin/dimensions/reorder',{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({order:order})});
-  _dragDim=null;renderQuestions();
+  _dragDim=null;
+  await persistOrder('/api/admin/dimensions/reorder',{order:order},'Volgorde opslaan is mislukt.');
 }
 
 function publishQuestions(){
@@ -2737,7 +2965,7 @@ document.addEventListener('change',function(e){
   var a=el.dataset.action;
   if(a==='changeQTheme'){
     var q=db.questions.find(function(x){return x.id===el.dataset.qid;});
-    if(q){q.theme=el.value;fetch('/api/admin/questions/'+q.id,{method:'PUT',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({theme:q.theme,text:q.text,active:q.active})}).then(function(){renderQuestions();});}
+    if(q){q.theme=el.value;adminWrite('/api/admin/questions/'+q.id,{method:'PUT',body:{theme:q.theme,text:q.text,active:q.active}},'Thema wijzigen is mislukt.').then(function(){renderQuestions();});}
   }
 });
 
@@ -2811,6 +3039,9 @@ document.addEventListener('click',function(e){
   if(a==='openRegenPrompt'){var tk=el.dataset.theme.replace(/[^a-zA-Z0-9]/g,'_');var wrap=document.getElementById('regen-'+tk);if(wrap)wrap.classList.toggle('open');}
   if(a==='doRegen'){var themeKey2=el.dataset.theme.replace(/[^a-zA-Z0-9]/g,'_');var pinput=document.getElementById('rpinput-'+themeKey2);var cprompt=pinput?pinput.value.trim():'';el.disabled=true;el.textContent='Bezig...';regenAdvice(el.dataset.theme,cprompt).then(function(){el.disabled=false;el.textContent='Genereer';var wrap2=document.getElementById('regen-'+themeKey2);if(wrap2)wrap2.classList.remove('open');});}
   if(a==='cancelRegen'){var themeKey3=el.dataset.theme.replace(/[^a-zA-Z0-9]/g,'_');var wrap3=document.getElementById('regen-'+themeKey3);if(wrap3)wrap3.classList.remove('open');}
+  if(a==='copyLeadLink'){copyLeadLinkText(leadLinkUrl(el.dataset.token));}
+  if(a==='renameLeadLink'){renameLeadLink(el.dataset.token,decodeURIComponent(el.dataset.name||''));}
+  if(a==='deleteLeadLink'){deleteLeadLink(el.dataset.token,decodeURIComponent(el.dataset.name||''));}
   if(a==='restoreVersion'){restoreVersion(el.dataset.vid);}
   if(a==='deleteVersion'){deleteVersion(el.dataset.vid);}
 });
@@ -2820,7 +3051,13 @@ injectLogos();
 checkShareParam();
 (function checkLeadParam(){
   var params=new URLSearchParams(location.search);
-  if(!params.get('teamonderzoek'))return;
+  var token=params.get('teamonderzoek');
+  if(!token)return;
+  // '1' is de oude link zonder statistieken; die blijft gewoon werken.
+  if(token!=='1'){
+    currentLeadLinkToken=token;
+    trackLeadLinkClick(token);
+  }
   history.replaceState(null,'',location.pathname);
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
   document.documentElement.style.visibility='';
@@ -2845,7 +3082,10 @@ checkShareParam();
     await loadAdminData();
     showView('admin');renderAdmin();
   }catch(e){
+    // Expired or revoked token: drop it and go back to the login screen rather
+    // than leaving a half-loaded admin shell on screen.
     adminToken=null;sessionStorage.removeItem('adminToken');
+    showView('landing');
   }
 })();
 </script>

@@ -1,4 +1,4 @@
-# TeamBelevingsonderzoek — Deployment Guide
+# Team APK — Deployment Guide
 
 ## Wat je nodig hebt
 - Een GitHub account
@@ -10,19 +10,19 @@
 ## Stap 1 — Repository aanmaken op GitHub
 
 1. Ga naar github.com → klik **New repository**
-2. Naam: `teambelevingsonderzoek`
+2. Naam: `team-apk`
 3. Visibility: **Private** (aanbevolen)
 4. Klik **Create repository**
 
 Upload de bestanden:
 ```
-teambelevingsonderzoek/
+team-apk/
 ├── server.js
 ├── package.json
 ├── .gitignore
 ├── .env.example
 └── public/
-    └── index.html   ← jouw teambelevingsonderzoek.html hernoemd naar index.html
+    └── index.html   ← jouw team-apk.html hernoemd naar index.html
 ```
 
 ---
@@ -31,7 +31,7 @@ teambelevingsonderzoek/
 
 1. Ga naar **railway.app** → klik **New Project**
 2. Kies **Deploy from GitHub repo**
-3. Verbind je GitHub account en selecteer `teambelevingsonderzoek`
+3. Verbind je GitHub account en selecteer `team-apk`
 4. Railway detecteert automatisch Node.js en start de deploy
 
 ### Database toevoegen
@@ -55,7 +55,7 @@ In Railway → je service → **Variables** tab, voeg toe:
 
 ## Stap 4 — index.html klaarmaken
 
-Hernoem `teambelevingsonderzoek.html` naar `index.html` en zet het in de `public/` map.
+Hernoem `team-apk.html` naar `index.html` en zet het in de `public/` map.
 
 **Belangrijk:** De frontend communiceert nu via de backend API. Als je de huidige HTML gebruikt, werkt localStorage nog. Voor de volledige multi-user ervaring zie "Volgende stap" hieronder.
 
