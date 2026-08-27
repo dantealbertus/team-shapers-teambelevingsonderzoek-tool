@@ -6,10 +6,12 @@
 <script>if(new URLSearchParams(location.search).get('code')){document.documentElement.style.visibility='hidden';}</script>
 <title>Team APK   Team Shapers</title>
 <link rel="icon" type="image/png" href="/favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-@font-face{font-family:'GI';src:url('https://fonts.cdnfonts.com/s/15011/GlacialIndifference-Regular.woff') format('woff');font-weight:400;}
-@font-face{font-family:'GI';src:url('https://fonts.cdnfonts.com/s/15011/GlacialIndifference-Bold.woff') format('woff');font-weight:700;}
+/* AVG: fonts worden lokaal geserveerd zodat bezoekers-IP's niet naar Google
+   Fonts of cdnfonts.com gaan (doorgifte buiten de EU zonder grondslag). */
+@font-face{font-family:'GI';src:url('/fonts/GlacialIndifference-Regular.woff') format('woff');font-weight:400;font-display:swap;}
+@font-face{font-family:'GI';src:url('/fonts/GlacialIndifference-Bold.woff') format('woff');font-weight:700;font-display:swap;}
+@font-face{font-family:'Inter';src:url('/fonts/Inter-Variable.woff2') format('woff2-variations');font-weight:100 900;font-display:swap;}
 :root{
   --purple:#7C309C;--purple-light:#9B4DBB;--purple-pale:#F3E8FA;
   --green:#0F9F69;--green-light:#12C07E;--green-pale:#E6F7F1;
@@ -527,6 +529,16 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
         <div class="card-header"><h3>Recente deelnemers</h3></div>
         <table><thead><tr><th>Deelnemer</th><th>Team</th><th>Status</th><th>Voortgang</th><th>Afgerond op</th></tr></thead><tbody id="dashboard-tbody"></tbody></table>
       </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header"><h3>Gegevensbewaring (AVG)</h3></div>
+        <p style="font-size:13px;color:var(--gray-mid);line-height:1.6;margin-bottom:12px">Persoonsgegevens (deelnemers, antwoorden, rapporten en deellinks) worden na deze termijn automatisch verwijderd. Organisaties, teams, vragen en de kennisbank blijven bewaard.</p>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label style="font-size:12px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.05em">Bewaartermijn:</label>
+          <input type="number" id="retention-months" min="1" max="120" style="width:80px;padding:8px 10px;border:2px solid var(--gray-border);border-radius:8px;font-family:var(--font);font-size:14px;outline:none">
+          <span style="font-size:13px;color:var(--gray-mid)">maanden</span>
+          <button class="btn btn-secondary btn-sm" onclick="saveRetention()">Opslaan</button>
+        </div>
+      </div>
     </div>
 
     <div id="tab-organisations" style="display:none">
@@ -609,6 +621,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <button class="btn btn-primary btn-full mt-4" onclick="participantLogin()">Doorgaan</button>
     <div class="divider"></div>
     <p style="font-size:13px;color:var(--gray-mid);text-align:center">Terug naar <span style="color:var(--purple);cursor:pointer;font-weight:700" onclick="showView('landing')">startpagina</span></p>
+    <p style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:8px"><span style="color:var(--purple);cursor:pointer;font-weight:700" onclick="openModal('modal-privacy')">Privacyverklaring</span></p>
   </div>
 </div>
 
@@ -622,6 +635,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <div class="form-group"><label>Organisatie</label><input type="text" id="lead-org"></div>
     <div class="error-msg" id="lead-error">Vul je naam en organisatie in.</div>
     <button class="btn btn-primary btn-full mt-4" onclick="leadRegister()">Starten</button>
+    <p style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:14px">Door te starten ga je akkoord met de <span style="color:var(--purple);cursor:pointer;font-weight:700" onclick="openModal('modal-privacy')">privacyverklaring</span>.</p>
   </div>
 </div>
 
@@ -645,6 +659,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
         <div class="intro-step"><div class="num">3</div><p><strong>Je kunt altijd terug:</strong> gebruik de knop "Vorige" om een antwoord aan te passen.</p></div>
       </div>
       <p class="intro-italic">Het invullen van deze vragenlijst duurt gemiddeld tien minuten.</p>
+      <p style="font-size:12px;color:var(--gray-mid);margin-top:10px">Je antwoorden worden vertrouwelijk behandeld. Lees hoe we met je gegevens omgaan in de <span style="color:var(--purple);cursor:pointer;font-weight:700" onclick="openModal('modal-privacy')">privacyverklaring</span>.</p>
       <button class="btn btn-primary mt-4" onclick="startSurvey()" style="padding:13px 26px;font-size:15px">Starten</button>
     </div>
     <div id="survey-question" style="display:none;gap:20px;max-width:680px;width:100%;align-items:flex-start;">
@@ -724,7 +739,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
       <div class="form-group"><label>Voornaam <span style="color:var(--purple)">*</span></label><input type="text" id="input-p-firstname" placeholder="Jan"></div>
       <div class="form-group"><label>Achternaam</label><input type="text" id="input-p-lastname" placeholder="Jansen"></div>
     </div>
-    <div class="form-group"><label>E-mailadres</label><input type="email" id="input-p-email" placeholder="naam@bedrijf.nl"></div>
+    <div class="form-group"><label>E-mailadres <span style="color:var(--gray-mid);font-weight:400;text-transform:none">(optioneel — alleen invullen als het echt nodig is)</span></label><input type="email" id="input-p-email" placeholder="naam@bedrijf.nl"></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-add-participant')">Annuleren</button><button class="btn btn-primary" onclick="addParticipant()">Toevoegen &amp; link genereren</button></div>
   </div>
 </div>
@@ -820,6 +835,24 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-lead-link')">Sluiten</button><button class="btn btn-primary" id="lead-link-create-btn" onclick="createLeadLink()">Link aanmaken</button></div>
   </div>
 </div>
+<div class="modal-overlay" id="modal-privacy">
+  <div class="modal modal-lg"><h3>Privacyverklaring</h3>
+    <div style="font-size:13px;color:#444;line-height:1.7;max-height:60vh;overflow-y:auto">
+      <p style="margin-bottom:10px">Team Shapers verwerkt jouw gegevens voor het teambelevingsonderzoek (Team APK). Hieronder lees je wat er met je gegevens gebeurt.</p>
+      <p style="font-weight:700;margin-bottom:4px">Welke gegevens worden opgeslagen?</p>
+      <p style="margin-bottom:10px">Je naam, eventueel je e-mailadres, je team- en organisatienaam en je antwoorden op de vragenlijst. Antwoorden zijn uitsluitend scores van 1 tot 5 — er wordt geen vrije tekst van je opgeslagen.</p>
+      <p style="font-weight:700;margin-bottom:4px">Waarvoor worden ze gebruikt?</p>
+      <p style="margin-bottom:10px">Voor het opstellen van een teamrapport en een individueel rapport over de teamsamenwerking. Voor de adviesteksten worden geaggregeerde scores — zonder je naam — verwerkt via een AI-dienst (Anthropic).</p>
+      <p style="font-weight:700;margin-bottom:4px">Vertrouwelijk, niet anoniem</p>
+      <p style="margin-bottom:10px">Je antwoorden worden vertrouwelijk behandeld, maar zijn niet anoniem: de beheerder van Team Shapers kan individuele resultaten inzien. Teamrapporten tonen gemiddelden en spreiding van het hele team.</p>
+      <p style="font-weight:700;margin-bottom:4px">Opslag en bewaartermijn</p>
+      <p style="margin-bottom:10px">Gegevens worden opgeslagen in een beveiligde, versleutelde database en verstuurd via een beveiligde verbinding (HTTPS). Persoonsgegevens worden na afloop van de bewaartermijn (standaard 12 maanden) automatisch verwijderd.</p>
+      <p style="font-weight:700;margin-bottom:4px">Jouw rechten</p>
+      <p>Je hebt het recht op inzage, correctie en verwijdering van je gegevens. Neem daarvoor contact op met Team Shapers.</p>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('modal-privacy')">Sluiten</button></div>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-confirm-delete">
   <div class="modal"><h3 id="confirm-delete-title">Verwijderen?</h3>
     <p id="confirm-delete-msg" style="color:var(--gray-mid);font-size:14px;margin-bottom:4px"></p>
@@ -832,11 +865,15 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 <div class="modal-overlay" id="modal-share">
 
   <div class="modal"><h3>Deelbare link aanmaken</h3>
-    <p style="font-size:13px;color:var(--gray-mid);margin-bottom:16px">Stel een wachtwoord in. Stuur de link en het wachtwoord door naar je klant.</p>
-    <div class="form-group"><label>Wachtwoord</label><input type="text" id="share-pwd" placeholder="bijv. rapport2025"></div>
+    <p style="font-size:13px;color:var(--gray-mid);margin-bottom:16px">Stel een wachtwoord in (minimaal 8 tekens). Stuur de link en het wachtwoord apart door naar je klant.</p>
+    <div class="form-group"><label>Wachtwoord</label><input type="text" id="share-pwd" placeholder="minimaal 8 tekens"></div>
     <div id="share-link-result" style="display:none">
       <div class="alert alert-green" id="share-link-box" style="word-break:break-all;font-size:12px;cursor:pointer;margin-top:8px;"></div>
       <p style="font-size:12px;color:var(--gray-mid);margin-top:5px">Klik op de link om te kopiëren.</p>
+    </div>
+    <div id="share-existing" style="display:none;margin-top:14px">
+      <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px">Actieve deellinks</label>
+      <div id="share-existing-list"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-share')">Sluiten</button><button class="btn btn-primary" onclick="createShareLink()">Link aanmaken</button></div>
   </div>
@@ -1008,7 +1045,7 @@ function adminTab(tab){
     document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
     var n=document.getElementById('nav-'+t);if(n)n.classList.toggle('active',t===tab);
   });
-  if(tab==='dashboard')renderDashboard();
+  if(tab==='dashboard'){renderDashboard();loadRetention();}
   if(tab==='organisations')renderOrgs();
   if(tab==='leads'){renderLeads();refreshLeadLinks();}
   if(tab==='questions')renderQuestions();
@@ -1016,6 +1053,22 @@ function adminTab(tab){
   if(tab==='knowledge')renderKb();
 }
 function renderAdmin(){adminTab('dashboard');}
+
+// AVG-bewaartermijn: instelbaar door de beheerder, uitgevoerd door de server.
+async function loadRetention(){
+  try{
+    var r=await api('/api/admin/retention',{admin:true});
+    var el=document.getElementById('retention-months');
+    if(el)el.value=r.months;
+  }catch(e){/* niet blokkerend voor het dashboard */}
+}
+async function saveRetention(){
+  var v=parseInt(document.getElementById('retention-months').value,10);
+  if(!v||v<1||v>120){showNotice('Kies een bewaartermijn tussen 1 en 120 maanden.','warning');return;}
+  if(await adminWrite('/api/admin/retention',{method:'PUT',body:{months:v}},'Bewaartermijn opslaan is mislukt.')){
+    showNotice('Bewaartermijn opgeslagen: '+v+' maanden.','success');
+  }
+}
 
 function realOrgs(){return db.organisations.filter(function(o){return !o.is_leads;});}
 function leadsOrg(){return db.organisations.find(function(o){return o.is_leads;});}
@@ -1771,7 +1824,9 @@ function downloadReportPdf(){
   var w=window.open('','_blank','width=900,height=700');
   if(!w){showNotice('Pop-up geblokkeerd door de browser. Sta pop-ups toe voor deze pagina.','warning');return;}
   var title='Team APK Rapport';
-  w.document.write('<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>'+title+'</title>'+
+  // <base>: de fonts staan nu op relatieve /fonts/-paden en moeten ook in het
+  // losse printvenster (about:blank) tegen dit domein resolven.
+  w.document.write('<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><base href="'+location.origin+'/"><title>'+title+'</title>'+
     styles+
     '<style>'+
     'body{background:white;margin:0;padding:0;}'+
@@ -2101,6 +2156,29 @@ function openShareModalFor(teamId){
   document.getElementById('share-pwd').value='';
   document.getElementById('share-link-result').style.display='none';
   openModal('modal-share');
+  refreshShareLinks();
+}
+// AVG: bestaande deellinks tonen en kunnen intrekken — een gedeelde link mag
+// niet voor altijd toegang blijven geven.
+async function refreshShareLinks(){
+  var wrap=document.getElementById('share-existing'),list=document.getElementById('share-existing-list');
+  try{
+    var links=await api('/api/admin/shared-reports?reportId='+encodeURIComponent(shareTeamId),{admin:true});
+    if(!links.length){wrap.style.display='none';return;}
+    list.innerHTML=links.map(function(l){
+      var url=location.origin+location.pathname+'?share='+encodeURIComponent(l.token);
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-border)">'+
+        '<span style="flex:1;font-size:12px;word-break:break-all;color:var(--gray-mid)">'+esc(url)+'</span>'+
+        '<span style="font-size:11px;color:var(--gray-mid);white-space:nowrap">'+esc(fmtDate(l.createdAt))+'</span>'+
+        '<button class="btn btn-danger btn-sm" data-action="revokeShare" data-token="'+esc(l.token)+'">Intrekken</button></div>';
+    }).join('');
+    wrap.style.display='block';
+  }catch(e){wrap.style.display='none';}
+}
+async function revokeShareLink(token){
+  if(!await adminWrite('/api/admin/shared-reports/'+encodeURIComponent(token),{method:'DELETE'},'Deellink intrekken is mislukt.'))return;
+  showNotice('Deellink ingetrokken. De link werkt niet meer.','success');
+  refreshShareLinks();
 }
 // The server builds the shared snapshot from the stored report and issues the
 // token, so the link's contents are not dictated by the browser.
@@ -2115,6 +2193,7 @@ async function createShareLink(){
     box.textContent=link;
     box.onclick=function(){navigator.clipboard.writeText(link).catch(function(){});box.textContent='Gekopieerd!';setTimeout(function(){box.textContent=link;},2000);};
     document.getElementById('share-link-result').style.display='block';
+    refreshShareLinks();
   }catch(e){
     showNotice(e.message||'Deellink aanmaken is mislukt.','warning');
   }
@@ -2987,6 +3066,7 @@ document.addEventListener('click',function(e){
   if(a==='deleteReport'){e.stopPropagation();deleteReport(el.dataset.team);}
   if(a==='viewStoredReport'){e.stopPropagation();viewStoredReport(el.dataset.rkey);}
   if(a==='shareReport'){e.stopPropagation();openShareModalFor(el.dataset.teamid);}
+  if(a==='revokeShare'){e.stopPropagation();revokeShareLink(el.dataset.token);}
   if(a==='deleteParticipant'){e.stopPropagation();deleteParticipant(el.dataset.pid,el.dataset.pname);}
   if(a==='viewIndividualReport'){e.stopPropagation();viewIndividualReportForPid(el.dataset.pid);}
   if(a==='genIndividualForPid'){e.stopPropagation();currentResultsPid=el.dataset.pid;currentResultsPname=decodeURIComponent(el.dataset.pname||'');generateIndividualReport();}

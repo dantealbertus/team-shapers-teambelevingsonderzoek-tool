@@ -116,3 +116,20 @@ De backend is al volledig klaar — alle endpoints zijn beschikbaar.
 | POST/DELETE | `/api/admin/themes` | Thema's beheren |
 | GET/POST/DELETE | `/api/admin/reports` | Rapporten beheren |
 | POST | `/api/ai/advice` | AI-advies genereren (proxied) |
+
+---
+
+## Privacy & AVG
+
+De tool bevat de volgende technische maatregelen:
+
+- **Volledige verwijdering**: het verwijderen van een deelnemer, team, organisatie of rapport verwijdert ook de bijbehorende rapporten en deellinks (inclusief snapshots met naam en scores).
+- **Bewaartermijn**: persoonsgegevens (deelnemers, antwoorden, rapporten, deellinks) worden automatisch verwijderd na de ingestelde bewaartermijn (standaard 12 maanden, instelbaar op het admin-dashboard, 1–120 maanden). De opschoning draait bij het opstarten en daarna dagelijks.
+- **Self-hosted fonts**: alle fonts worden vanaf het eigen domein geserveerd (`public/fonts/`); er gaan geen bezoekers-IP's meer naar Google Fonts of cdnfonts.com.
+- **Dataminimalisatie richting AI**: de naam van de deelnemer wordt niet meegestuurd naar de Anthropic API — alleen geaggregeerde scores, team- en organisatienaam.
+- **Intrekbare deellinks**: bestaande deellinks van een rapport zijn zichtbaar en intrekbaar in de deel-modal. Minimale wachtwoordlengte voor deellinks is 8 tekens.
+- **Privacyverklaring**: deelnemers zien op de start-, login- en aanmeldschermen een link naar de privacyverklaring (vertrouwelijk, niet anoniem; bewaartermijn; rechten).
+- **Security-headers**: Content-Security-Policy (alles van eigen domein), Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, Referrer-Policy.
+- **Database-TLS**: zet de env var `DATABASE_CA_CERT` (PEM-inhoud van het Railway CA-certificaat) om het databasecertificaat echt te valideren; zonder blijft de verbinding versleuteld maar ongevalideerd.
+
+Organisatorisch nog te regelen (buiten de code): verwerkersovereenkomsten met Railway en Anthropic, een verwerkersovereenkomst met de klant, en het onderzoek nooit als "anoniem" presenteren.

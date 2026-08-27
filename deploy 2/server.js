@@ -32,6 +32,16 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'same-origin');
+  // Alles (fonts incluis) wordt van het eigen domein geserveerd, dus de CSP kan
+  // elke externe bron blokkeren. 'unsafe-inline' is nodig zolang index.html
+  // inline scripts en styles gebruikt.
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data:; font-src 'self'; connect-src 'self'; " +
+    "frame-ancestors 'self'; base-uri 'self'; form-action 'self'");
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
   next();
 });
 app.use(express.static(path.join(__dirname, 'public')));
@@ -47,10 +57,15 @@ if (!process.env.ADMIN_SESSION_TOKEN) {
 }
 
 // ── DATABASE ──────────────────────────────────────────────────────────
+// Met DATABASE_CA_CERT (PEM-inhoud van het Railway CA-certificaat) wordt het
+// servercertificaat echt gevalideerd; zonder blijft TLS actief maar ongevalideerd
+// omdat Railway self-signed certificaten gebruikt.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway')
-    ? { rejectUnauthorized: false }
+    ? (process.env.DATABASE_CA_CERT
+        ? { ca: process.env.DATABASE_CA_CERT, rejectUnauthorized: true }
+        : { rejectUnauthorized: false })
     : false
 });
 
@@ -271,6 +286,15 @@ setInterval(() => {
   for (const [key, entry] of rateBuckets) if (now > entry.reset) rateBuckets.delete(key);
 }, 60000).unref();
 
+// AVG: rapporten en shared_reports hebben geen foreign key naar participants,
+// dus zonder dit blijven naam + scores achter na het verwijderen van een
+// deelnemer, team of organisatie. Altijd binnen de transactie van de aanroeper.
+async function deleteReportsAndShares(client, reportIds) {
+  if (!reportIds.length) return;
+  await client.query('DELETE FROM shared_reports WHERE report_id = ANY($1::text[])', [reportIds]);
+  await client.query('DELETE FROM reports WHERE id = ANY($1::text[])', [reportIds]);
+}
+
 // Confirms a participant owns the id they claim, using the code they logged in with.
 async function verifyParticipant(participantId, code) {
   if (!participantId || !code) return null;
@@ -477,11 +501,25 @@ app.post('/api/admin/organisations', adminAuth, async (req, res) => {
 });
 
 app.delete('/api/admin/organisations/:id', adminAuth, async (req, res) => {
+  const client = await pool.connect();
   try {
-    await pool.query('DELETE FROM organisations WHERE id = $1', [req.params.id]);
+    await client.query('BEGIN');
+    const reports = await client.query(
+      `SELECT id FROM reports
+       WHERE org_id = $1
+          OR team_id IN (SELECT id FROM teams WHERE org_id = $1)
+          OR participant_id IN (SELECT p.id FROM participants p JOIN teams t ON p.team_id = t.id WHERE t.org_id = $1)`,
+      [req.params.id]
+    );
+    await deleteReportsAndShares(client, reports.rows.map(r => r.id));
+    await client.query('DELETE FROM organisations WHERE id = $1', [req.params.id]);
+    await client.query('COMMIT');
     res.json({ ok: true });
   } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
     fail(res, 500, 'Organisatie verwijderen is mislukt.', e);
+  } finally {
+    client.release();
   }
 });
 
@@ -498,11 +536,24 @@ app.post('/api/admin/teams', adminAuth, async (req, res) => {
 });
 
 app.delete('/api/admin/teams/:id', adminAuth, async (req, res) => {
+  const client = await pool.connect();
   try {
-    await pool.query('DELETE FROM teams WHERE id = $1', [req.params.id]);
+    await client.query('BEGIN');
+    const reports = await client.query(
+      `SELECT id FROM reports
+       WHERE team_id = $1 OR id = $1
+          OR participant_id IN (SELECT id FROM participants WHERE team_id = $1)`,
+      [req.params.id]
+    );
+    await deleteReportsAndShares(client, reports.rows.map(r => r.id));
+    await client.query('DELETE FROM teams WHERE id = $1', [req.params.id]);
+    await client.query('COMMIT');
     res.json({ ok: true });
   } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
     fail(res, 500, 'Team verwijderen is mislukt.', e);
+  } finally {
+    client.release();
   }
 });
 
@@ -525,11 +576,23 @@ app.post('/api/admin/participants', adminAuth, async (req, res) => {
 });
 
 app.delete('/api/admin/participants/:id', adminAuth, async (req, res) => {
+  const client = await pool.connect();
   try {
-    await pool.query('DELETE FROM participants WHERE id = $1', [req.params.id]);
+    const pid = req.params.id;
+    await client.query('BEGIN');
+    const reports = await client.query(
+      'SELECT id FROM reports WHERE id = $1 OR participant_id = $2',
+      ['individual_' + pid, pid]
+    );
+    await deleteReportsAndShares(client, reports.rows.map(r => r.id));
+    await client.query('DELETE FROM participants WHERE id = $1', [pid]);
+    await client.query('COMMIT');
     res.json({ ok: true });
   } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
     fail(res, 500, 'Deelnemer verwijderen is mislukt.', e);
+  } finally {
+    client.release();
   }
 });
 
@@ -884,6 +947,86 @@ app.post('/api/lead/register', async (req, res) => {
   }
 });
 
+// ── AVG: BEWAARTERMIJN ────────────────────────────────────────────────
+// Persoonsgegevens (deelnemers, antwoorden, rapporten, deellinks) worden na de
+// ingestelde bewaartermijn automatisch verwijderd. Organisatie- en teamnamen,
+// vragen en de kennisbank blijven staan — dat zijn geen persoonsgegevens.
+const DEFAULT_RETENTION_MONTHS = 12;
+
+async function getRetentionMonths() {
+  const r = await pool.query("SELECT value FROM settings WHERE key = 'retention_months'");
+  const v = r.rows.length ? parseInt(r.rows[0].value) : NaN;
+  return Number.isInteger(v) && v >= 1 && v <= 120 ? v : DEFAULT_RETENTION_MONTHS;
+}
+
+async function purgeExpiredData() {
+  const client = await pool.connect();
+  try {
+    const months = await getRetentionMonths();
+    await client.query('BEGIN');
+    // Deelnemers wier onderzoek langer dan de termijn geleden is afgerond, of
+    // die na aanmaak nooit zijn gestart. Antwoorden cascaden mee via de FK.
+    const expired = await client.query(
+      `SELECT id FROM participants
+       WHERE COALESCE(completed_at, created_at) < NOW() - ($1 || ' months')::interval`,
+      [months]
+    );
+    const pids = expired.rows.map(r => r.id);
+    if (pids.length) {
+      const reports = await client.query(
+        'SELECT id FROM reports WHERE participant_id = ANY($1::text[]) OR id = ANY($2::text[])',
+        [pids, pids.map(id => 'individual_' + id)]
+      );
+      await deleteReportsAndShares(client, reports.rows.map(r => r.id));
+      await client.query('DELETE FROM participants WHERE id = ANY($1::text[])', [pids]);
+    }
+    // Verouderde rapporten en deellinks, ook wanneer de deelnemers zelf al
+    // eerder handmatig zijn verwijderd.
+    const oldReports = await client.query(
+      `SELECT id FROM reports WHERE generated_at < NOW() - ($1 || ' months')::interval`,
+      [months]
+    );
+    await deleteReportsAndShares(client, oldReports.rows.map(r => r.id));
+    await client.query(
+      `DELETE FROM shared_reports WHERE created_at < NOW() - ($1 || ' months')::interval`,
+      [months]
+    );
+    await client.query('COMMIT');
+    if (pids.length || oldReports.rows.length) {
+      console.log(`Bewaartermijn (${months} mnd): ${pids.length} deelnemer(s) en ${oldReports.rows.length} rapport(en) verwijderd`);
+    }
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('Automatisch opschonen (bewaartermijn) mislukt:', e.message);
+  } finally {
+    client.release();
+  }
+}
+
+app.get('/api/admin/retention', adminAuth, async (req, res) => {
+  try {
+    res.json({ months: await getRetentionMonths() });
+  } catch (e) {
+    fail(res, 500, 'Bewaartermijn kon niet geladen worden.', e);
+  }
+});
+
+app.put('/api/admin/retention', adminAuth, async (req, res) => {
+  try {
+    const months = Number((req.body || {}).months);
+    if (!Number.isInteger(months) || months < 1 || months > 120) {
+      return res.status(400).json({ error: 'Kies een bewaartermijn tussen 1 en 120 maanden.' });
+    }
+    await pool.query(
+      "INSERT INTO settings (key, value) VALUES ('retention_months', $1) ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()",
+      [JSON.stringify(months)]
+    );
+    res.json({ months });
+  } catch (e) {
+    fail(res, 500, 'Bewaartermijn opslaan is mislukt.', e);
+  }
+});
+
 // ── ADMIN: ANSWERS (for reports) ──────────────────────────────────────
 app.get('/api/admin/answers/:participantId', adminAuth, async (req, res) => {
   try {
@@ -1039,14 +1182,17 @@ function teamAdvicePrompt(ctx, scores, teamName, orgName, count) {
     '{' + themeKeys.map((t, i) => '"THEMA_' + i + '":"lopende alinea"').join(',') + '}';
 }
 
-function individualAdvicePrompt(ctx, scores, participantName, teamName) {
+// AVG-dataminimalisatie: de naam van de deelnemer gaat bewust niet mee in de
+// prompt — het advies is toch in de ik-vorm, dus de naam voegt niets toe en
+// hoeft dan ook niet naar de AI-verwerker gestuurd te worden.
+function individualAdvicePrompt(ctx, scores, teamName) {
   const themeKeys = Object.keys(scores.tAvgs);
   return 'Je bent expert in teamontwikkeling bij Team Shapers. Genereer voor elk thema een persoonlijk advies in het Nederlands.\n\n' +
     'Structuur per thema:\n' +
     '1. Constatering (ik-vorm): wat zeggen de scores over deze persoon.\n' +
     '2. Advies van Team Shapers (algemene schrijfstijl, geen ik/wij): concreet handelingsperspectief.\n\n' +
     (ctx.kbContext ? 'Gebruik deze kennis van Team Shapers als context:\n' + ctx.kbContext + '\n\n' : '') +
-    'Deelnemer: ' + participantName + ', team: ' + teamName + '\n\n' +
+    'Team van de deelnemer: ' + teamName + '\n\n' +
     themeScoreLines(themeKeys, scores.tAvgs, scores.qScores, ctx.questions) + '\n\n' +
     'Geef ALLEEN een JSON object terug, geen markdown:\n' +
     '{' + themeKeys.map((t, i) => '"THEMA_' + i + '":"advies"').join(',') + '}\n\n' +
@@ -1156,7 +1302,7 @@ async function generateIndividualReport(participantId) {
 
   let aiWarning = null;
   try {
-    const text = await callClaude(individualAdvicePrompt(ctx, scores, participantName, p.team_name), 2000);
+    const text = await callClaude(individualAdvicePrompt(ctx, scores, p.team_name), 2000);
     report.aiAdvice = parseThemeAdvice(text, Object.keys(scores.tAvgs));
   } catch (e) {
     aiWarning = e.message;
@@ -1281,11 +1427,17 @@ app.post('/api/admin/reports', adminAuth, async (req, res) => {
 });
 
 app.delete('/api/admin/reports/:id', adminAuth, async (req, res) => {
+  const client = await pool.connect();
   try {
-    await pool.query('DELETE FROM reports WHERE id = $1', [req.params.id]);
+    await client.query('BEGIN');
+    await deleteReportsAndShares(client, [req.params.id]);
+    await client.query('COMMIT');
     res.json({ ok: true });
   } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
     fail(res, 500, 'Rapport verwijderen is mislukt.', e);
+  } finally {
+    client.release();
   }
 });
 
@@ -1327,8 +1479,8 @@ app.post('/api/admin/shared-reports', adminAuth, async (req, res) => {
   try {
     const { reportId, password } = req.body || {};
     if (!reportId) return res.status(400).json({ error: 'reportId ontbreekt' });
-    if (!password || String(password).length < 4) {
-      return res.status(400).json({ error: 'Kies een wachtwoord van minimaal 4 tekens.' });
+    if (!password || String(password).length < 8) {
+      return res.status(400).json({ error: 'Kies een wachtwoord van minimaal 8 tekens.' });
     }
     const stored = await pool.query('SELECT data FROM reports WHERE id = $1', [reportId]);
     if (!stored.rows.length) return res.status(404).json({ error: 'Rapport niet gevonden.' });
@@ -1354,6 +1506,29 @@ app.post('/api/admin/shared-reports', adminAuth, async (req, res) => {
     res.json({ token });
   } catch (e) {
     fail(res, 500, 'Deellink aanmaken is mislukt.', e);
+  }
+});
+
+// AVG: deellinks per rapport inzien en intrekken. Een link die eenmaal is
+// gedeeld moet weer ongeldig gemaakt kunnen worden.
+app.get('/api/admin/shared-reports', adminAuth, async (req, res) => {
+  try {
+    const { reportId } = req.query || {};
+    const result = reportId
+      ? await pool.query('SELECT token, report_id, created_at FROM shared_reports WHERE report_id = $1 ORDER BY created_at DESC', [reportId])
+      : await pool.query('SELECT token, report_id, created_at FROM shared_reports ORDER BY created_at DESC');
+    res.json(result.rows.map(r => ({ token: r.token, reportId: r.report_id, createdAt: r.created_at })));
+  } catch (e) {
+    fail(res, 500, 'Deellinks konden niet geladen worden.', e);
+  }
+});
+
+app.delete('/api/admin/shared-reports/:token', adminAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM shared_reports WHERE token = $1', [req.params.token]);
+    res.json({ ok: true });
+  } catch (e) {
+    fail(res, 500, 'Deellink intrekken is mislukt.', e);
   }
 });
 
@@ -1399,6 +1574,9 @@ process.on('unhandledRejection', (reason) => {
 // ── START ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 initDB().then(() => {
+  // AVG-bewaartermijn: bij het opstarten en daarna dagelijks opschonen.
+  purgeExpiredData();
+  setInterval(purgeExpiredData, 24 * 60 * 60 * 1000).unref();
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }).catch(err => {
   console.error('Failed to initialise database:', err);
