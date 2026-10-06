@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>if(new URLSearchParams(location.search).get('code')){document.documentElement.style.visibility='hidden';}</script>
+<script>if(new URLSearchParams(location.search).get('code')||sessionStorage.getItem('adminToken')){document.documentElement.style.visibility='hidden';}</script>
 <title>Team APK   Team Shapers</title>
 <link rel="icon" type="image/png" href="/favicon.png">
 <style>
@@ -120,24 +120,86 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 .modal h3{font-size:18px;font-weight:700;margin-bottom:16px;}
 .modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:20px;}
 
-/* COLLAPSIBLE ORG */
-.org-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;}
-.org-card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none;}
-.org-card-header:hover{background:var(--gray-bg);}
-.org-card-title{font-size:15px;font-weight:700;color:var(--black);}
-.org-card-meta{font-size:12px;font-weight:400;color:var(--gray-mid);margin-left:8px;}
-.org-toggle{width:26px;height:26px;border-radius:7px;background:var(--gray-bg);display:flex;align-items:center;justify-content:center;transition:transform .2s;flex-shrink:0;}
-.org-toggle svg{width:13px;height:13px;color:var(--gray-mid);}
-.org-card.collapsed .org-toggle{transform:rotate(-90deg);}
-.org-card-body{padding:0 20px 16px;}
-.org-card.collapsed .org-card-body{display:none;}
-.team-block{background:var(--gray-bg);border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;margin-top:10px;}
-.team-block-inner-pad{padding:14px 16px;}
-.team-block-body{overflow:hidden;transition:max-height .35s ease,opacity .25s ease;max-height:2000px;opacity:1;}
-.team-block-body.collapsed{max-height:0 !important;opacity:0;}
-.team-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
-.team-title{font-size:14px;font-weight:700;color:var(--black);}
-.team-meta{font-size:12px;color:var(--gray-mid);margin-top:3px;}
+/* ORGANISATIES: lijst links, organisatie of team rechts.
+   Eén typeschaal voor dit scherm: 20/700 titel, 14/700 namen en hoofdknop,
+   14/400 tekst en overige knoppen, 12/400 grijs voor labels en aantallen.
+   Paars is alleen voor de hoofdknop en de selectie. */
+.orgs-layout{--muted:#737373;display:grid;grid-template-columns:260px minmax(0,1fr);gap:16px;align-items:start;font-size:14px;line-height:1.4;color:var(--black);}
+.orgs-layout.empty{display:block;}
+.orgs-layout.empty .orgs-side{display:none;}
+.orgs-layout .muted{color:var(--muted);}
+.orgs-layout .btn{height:34px;padding:0 14px;border-radius:8px;font-size:14px;letter-spacing:0;justify-content:center;white-space:nowrap;}
+.orgs-layout .btn-secondary{font-weight:400;}
+.orgs-layout .btn-primary:hover{transform:none;box-shadow:none;}
+.rep-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#BDBDBD;flex-shrink:0;}
+.rep-dot.ok{background:var(--green);}
+.rep-dot.stale{background:var(--yellow);}
+
+.orgs-side{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:2px;}
+.side-item{display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px;border:none;border-radius:8px;background:none;font-family:var(--font);font-size:14px;color:var(--black);text-align:left;cursor:pointer;}
+.side-item:hover{background:var(--gray-bg);}
+.side-item.sel{background:var(--purple-pale);}
+.side-item .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.side-item .count{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.prog-ring{width:16px;height:16px;flex-shrink:0;transform:rotate(-90deg);}
+.prog-ring circle{fill:none;stroke:var(--gray-border);stroke-width:2.5;}
+.prog-ring .arc{stroke:var(--black);stroke-linecap:round;}
+.side-org{font-weight:700;}
+.side-org .rep-dot{margin-right:4px;}
+.side-org:not(:first-child){margin-top:10px;}
+.side-team{padding-left:22px;}
+.orgs-add{display:flex;align-items:center;height:44px;padding:0;border:none;background:none;font-family:var(--font);font-size:14px;color:var(--muted);cursor:pointer;}
+.orgs-add:hover{color:var(--black);}
+.orgs-side .orgs-add{margin-top:10px;padding:0 10px;border-top:1px solid var(--gray-border);}
+
+.orgs-main{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;min-width:0;}
+.orgs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.orgs-head h2{font-size:20px;font-weight:700;line-height:1.2;}
+.orgs-crumb{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.orgs-crumb button{padding:0;border:none;background:none;font:inherit;color:inherit;cursor:pointer;}
+.orgs-crumb button:hover{color:var(--black);text-decoration:underline;}
+.orgs-actions{display:flex;align-items:center;gap:6px;}
+.orgs-back{display:none;align-items:center;height:34px;padding:0;margin-bottom:8px;border:none;background:none;font-family:var(--font);font-size:14px;color:var(--muted);cursor:pointer;}
+.rep-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--gray-bg);border-radius:12px;padding:14px 16px;margin-top:20px;width:25%;min-width:340px;max-width:100%;}
+.rep-text{flex:1;min-width:200px;}
+.rep-title{display:flex;align-items:center;gap:8px;font-weight:700;}
+.rep-note{font-size:12px;color:var(--muted);margin-top:2px;padding-left:16px;}
+.rep-banner+.orgs-table,.rep-banner+.orgs-none{margin-top:12px;}
+.orgs-none{padding:16px 0 4px;color:var(--muted);}
+.orgs-tabs{display:flex;gap:22px;margin-top:24px;border-bottom:1px solid var(--gray-border);overflow-x:auto;}
+.orgs-tab{padding:0 0 10px;margin-bottom:-1px;border:none;border-bottom:2px solid transparent;background:none;font-family:var(--font);font-size:14px;color:var(--muted);white-space:nowrap;cursor:pointer;}
+.orgs-tab:hover,.orgs-tab.on{color:var(--black);}
+.orgs-tab.on{border-bottom-color:var(--black);}
+.orgs-tab span{margin-left:5px;font-size:12px;}
+
+.orgs-table{overflow-x:auto;}
+.orgs-table th{padding:12px 12px 10px;font-size:12px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;border-bottom:1px solid var(--gray-border);}
+.orgs-table td{height:56px;padding:0 12px;font-size:14px;white-space:nowrap;}
+.orgs-table th:first-child,.orgs-table td:first-child{padding-left:0;}
+.orgs-table th:last-child,.orgs-table td:last-child{padding-right:0;}
+.orgs-table tr:hover td{background:none;}
+.orgs-table tr.clickable{cursor:pointer;}
+.orgs-table tr.clickable:hover .cell-name{text-decoration:underline;}
+.orgs-table .cell-name{font-weight:700;}
+.orgs-table td.act{width:1%;white-space:nowrap;}
+.orgs-table tr.total td{height:44px;font-size:12px;color:var(--muted);}
+.orgs-table .badge{padding:3px 10px;font-size:12px;font-weight:400;white-space:nowrap;}
+.orgs-table .badge-gray{color:var(--muted);}
+.act-row{display:flex;gap:6px;justify-content:flex-end;align-items:center;}
+.orgs-table td .btn{min-width:150px;}
+.prog-cell{display:flex;align-items:center;gap:10px;white-space:nowrap;}
+.prog-cell .progress-bar{width:88px;height:6px;background:var(--gray-border);}
+.prog-cell .progress-fill{background:var(--black);}
+.rep-cell{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+.menu-btn{width:34px;height:34px;border:none;border-radius:8px;background:none;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.menu-btn:hover{background:var(--gray-bg);color:var(--black);}
+.menu-btn svg{width:16px;height:16px;}
+.row-menu{display:none;position:fixed;z-index:90;min-width:220px;flex-direction:column;background:var(--white);border:1px solid var(--gray-border);border-radius:10px;box-shadow:var(--shadow-lg);padding:6px;}
+.row-menu.open{display:flex;}
+.row-menu button{height:36px;padding:0 10px;border:none;border-radius:6px;background:none;font-family:var(--font);font-size:14px;color:var(--black);text-align:left;white-space:nowrap;cursor:pointer;}
+.row-menu button:hover{background:var(--gray-bg);}
+.row-menu button.del{color:#E63946;}
+.row-menu hr{border:none;border-top:1px solid var(--gray-border);margin:5px 0;}
 /* participant selection */
 .p-checkbox{width:15px;height:15px;accent-color:var(--purple);cursor:pointer;}
 .p-action-bar{display:none;align-items:center;gap:8px;padding:8px 12px;background:var(--purple-pale);border-radius:8px;margin-bottom:10px;border:1.5px solid var(--purple-pale);}
@@ -320,6 +382,27 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 .rpt-legend-bar{width:120px;height:8px;border-radius:4px;}
 .rpt-legend-label{font-size:13px;color:var(--black);font-family:var(--font);}
 
+/* Organisatierapport: respons, sterktes/aandachtspunten en teamvergelijking */
+.rpt-org-block{padding:8px 48px 28px;}
+.rpt-org-block h2{font-size:22px;font-weight:700;color:var(--black);margin-bottom:10px;font-family:var(--font);}
+.rpt-org-intro{font-size:13px;color:#555;line-height:1.7;margin-bottom:18px;font-family:var(--font);}
+.rpt-org-scroll{overflow-x:auto;margin-bottom:18px;}
+.rpt-org-table th,.rpt-org-table td{text-align:center;padding:9px 10px;}
+.rpt-org-table th:first-child,.rpt-org-table td:first-child{text-align:left;}
+.rpt-org-table tr:hover td{background:transparent;}
+.rpt-org-table .rpt-org-strong td{font-weight:700;}
+.rpt-org-table .rpt-org-sub td:first-child{padding-left:26px;}
+.rpt-org-table .rpt-org-total td{font-weight:700;border-top:2px solid var(--gray-border);}
+.rpt-org-cell{display:inline-block;min-width:44px;padding:5px 8px;border-radius:8px;font-weight:700;font-variant-numeric:tabular-nums;}
+.rpt-org-insights{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.rpt-org-card{background:#F5F5F5;border-radius:14px;padding:18px 20px;}
+.rpt-org-card h3{font-size:15px;font-weight:700;color:var(--black);margin-bottom:4px;font-family:var(--font);}
+.rpt-org-card p{font-size:12px;color:var(--gray-mid);line-height:1.5;margin-bottom:8px;font-family:var(--font);}
+.rpt-org-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13.5px;color:var(--black);font-family:var(--font);}
+.rpt-org-row + .rpt-org-row{border-top:1px solid rgba(17,17,17,.07);}
+.rpt-org-row-name{flex:1;min-width:0;}
+.rpt-org-row-sub{font-size:11.5px;color:var(--gray-mid);margin-top:2px;}
+
 /* AI box */
 .rpt-ai-box{background:linear-gradient(135deg,var(--purple-pale),#FAF5FE);border-left:4px solid var(--purple);border-radius:0 12px 12px 0;padding:16px 18px;margin-top:14px;}
 .rpt-ai-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -442,8 +525,17 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
   .rpt-spread-track{min-width:70px;}
   .rpt-footer{padding:14px 18px;flex-direction:column;gap:10px;text-align:center;}
   .rpt-footer-meta{flex-wrap:wrap;justify-content:center;gap:12px;}
+  .rpt-org-block{padding:4px 18px 22px;}
+  .rpt-org-insights{grid-template-columns:1fr;}
 
   /* Misc */
+  .orgs-layout{grid-template-columns:1fr;}
+  .orgs-main{display:none;padding:16px;}
+  .orgs-layout.show-detail .orgs-side{display:none;}
+  .orgs-layout.show-detail .orgs-main,.orgs-layout.empty .orgs-main{display:block;}
+  .orgs-back{display:inline-flex;}
+  .rep-banner{width:100%;min-width:0;}
+  .orgs-table table{min-width:620px;}
   .q-tabs-wrap{overflow-x:auto;flex-wrap:nowrap;}
   .card-header{flex-wrap:wrap;gap:8px;}
   .team-btn-row{flex-wrap:wrap;}
@@ -544,9 +636,11 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <div id="tab-organisations" style="display:none">
       <div class="page-header">
         <div><h1>Organisaties</h1><p>Beheer organisaties, teams en deelnemers</p></div>
-        <button class="btn btn-primary" onclick="openModal('modal-add-org')">+ Nieuwe organisatie</button>
       </div>
-      <div id="org-list"></div>
+      <div class="orgs-layout" id="orgs-layout">
+        <div class="orgs-side" id="org-list"></div>
+        <div class="orgs-main" id="org-detail"></div>
+      </div>
     </div>
 
     <div id="tab-leads" style="display:none">
@@ -682,6 +776,12 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
       <p>Je hebt de vragenlijst volledig ingevuld. Jouw antwoorden worden meegenomen in het teamrapport.</p>
       <p style="margin-top:9px">Je kunt dit venster nu sluiten.</p>
     </div>
+    <div class="completion-card" id="survey-redo" style="display:none">
+      <h2>Je hebt de vragenlijst al ingevuld</h2>
+      <p>Wil je hem opnieuw invullen? Je begint dan met een lege vragenlijst. Je eerdere antwoorden blijven bewaard tot je de nieuwe vragenlijst helemaal hebt afgerond; daarna vervangen de nieuwe antwoorden de oude.</p>
+      <button class="btn btn-primary mt-4" onclick="startRedo()" style="padding:13px 26px;font-size:15px">Opnieuw invullen</button>
+      <p style="margin-top:14px">Niets wijzigen? Dan kun je dit venster sluiten.</p>
+    </div>
   </div>
 </div>
 
@@ -756,15 +856,6 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
     <div class="form-group"><label>Thema</label><select id="edit-q-theme"></select></div>
     <div class="form-group"><label>Stelling</label><textarea id="edit-q-text" rows="3"></textarea></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-edit-question')">Annuleren</button><button class="btn btn-primary" onclick="saveEditQuestion()">Opslaan</button></div>
-  </div>
-</div>
-<div class="modal-overlay" id="modal-team-detail">
-  <div class="modal modal-lg"><h3 id="modal-team-title">Team details</h3>
-    <div id="modal-team-content"></div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-team-detail')">Sluiten</button>
-      <button class="btn btn-primary" id="btn-generate-report" onclick="generateReport()">Rapport genereren</button>
-    </div>
   </div>
 </div>
 <div class="modal-overlay" id="modal-results">
@@ -855,7 +946,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:var(--gray-bg);}
 </div>
 <div class="modal-overlay" id="modal-confirm-delete">
   <div class="modal"><h3 id="confirm-delete-title">Verwijderen?</h3>
-    <p id="confirm-delete-msg" style="color:var(--gray-mid);font-size:14px;margin-bottom:4px"></p>
+    <p id="confirm-delete-msg" style="color:var(--gray-mid);font-size:14px;margin-bottom:4px;white-space:pre-line"></p>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-confirm-delete')">Annuleren</button>
       <button class="btn btn-danger" id="confirm-delete-btn">Verwijderen</button>
@@ -1036,11 +1127,13 @@ async function adminLogin(){
     showView('admin');renderAdmin();
   }catch(e){err.style.display='block';}
 }
-function adminLogout(){adminToken=null;sessionStorage.removeItem('adminToken');db={organisations:[],questions:[],themes:[],themeDim:{},dimensions:[],answers:{},reports:{},knowledgeBase:[]};showView('landing');}
+function adminLogout(){adminToken=null;sessionStorage.removeItem('adminToken');sessionStorage.removeItem('adminTab');sessionStorage.removeItem('adminReport');db={organisations:[],questions:[],themes:[],themeDim:{},dimensions:[],answers:{},reports:{},knowledgeBase:[]};showView('landing');}
 document.getElementById('admin-password').addEventListener('keydown',function(e){if(e.key==='Enter')adminLogin();});
 
 function adminTab(tab){
   toggleMobileMenu(false);
+  // Onthouden zodat een refresh op hetzelfde tabblad terugkomt.
+  sessionStorage.setItem('adminTab',tab);
   ['dashboard','organisations','leads','questions','reports','knowledge'].forEach(function(t){
     document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
     var n=document.getElementById('nav-'+t);if(n)n.classList.toggle('active',t===tab);
@@ -1088,6 +1181,8 @@ function getAllLeads(){
 }
 function scoreColor(s){return s>=7.5?'var(--green)':s>=6?'var(--yellow)':'#E63946';}
 function pillClass(s){return s>=7.5?'pill-green':s>=6?'pill-yellow':'pill-red';}
+function scorePale(s){return s>=7.5?'var(--green-pale)':s>=6?'var(--yellow-pale)':'#FEF0F1';}
+function scoreText(s){return s>=7.5?'var(--green)':s>=6?'#9A6B00':'#E63946';}
 
 // Spreidingsband: paarse band van laagste tot hoogste antwoord (1-5 → 0-10 schaal),
 // met een stip op het gemiddelde. Smalle band = consensus, brede band = verdeeldheid.
@@ -1248,82 +1343,334 @@ function deleteLeadLink(token,name){
   });
 }
 
-function renderOrgs(){
-  var container=document.getElementById('org-list');
-  var orgs=realOrgs();
-  if(!orgs.length){container.innerHTML='<div class="empty-state">Nog geen organisaties. Voeg er een toe.</div>';return;}
-  container.innerHTML=orgs.map(function(org){
-    var teams=(org.teams||[]).map(function(team){return renderTeamBlock(org,team);}).join('');
-    return '<div class="org-card'+(org.collapsed?' collapsed':'')+'" id="org-'+org.id+'">'+
-      '<div class="org-card-header" data-action="toggleOrg" data-org="'+org.id+'">'+
-      '<div style="display:flex;align-items:center;gap:8px">'+
-      '<span class="org-card-title">'+esc(org.name)+'</span>'+
-      '<span class="org-card-meta">'+(org.teams||[]).length+' team(s)</span></div>'+
-      '<div style="display:flex;gap:7px;align-items:center">'+
-      '<button style="background:none;border:none;cursor:pointer;color:#E63946;font-size:18px;padding:2px 8px;line-height:1;font-weight:700" data-action="deleteOrg" data-org="'+org.id+'" title="Verwijder organisatie">&times;</button>'+
-      '<div class="org-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div></div></div>'+
-      '<div class="org-card-body">'+(!(org.teams||[]).length?'<div style="padding:16px;color:var(--gray-mid);font-size:13px">Geen teams. Voeg een team toe.</div>':teams)+
-      '<div style="padding:4px 0 2px"><button class="btn btn-sm btn-secondary" data-action="addTeam" data-org="'+org.id+'">Team toevoegen</button></div>'+
-      '</div></div>';
-  }).join('');
+// Een organisatierapport is een momentopname. Het is verouderd zodra de teams,
+// de aantallen deelnemers of de afgeronde vragenlijsten niet meer overeenkomen
+// met wat er bij het genereren is vastgelegd.
+var ORG_STALE_HINT='Sinds het genereren zijn teams of deelnemers gewijzigd. Genereer het organisatierapport opnieuw.';
+function isOrgReportStale(org,report){
+  var teams=org.teams||[],known=report.teams||[];
+  if(teams.length!==known.length)return true;
+  var generated=new Date(report.generatedAt);
+  return teams.some(function(team){
+    var k=known.find(function(x){return x.id===team.id;});
+    if(!k||k.name!==team.name)return true;
+    var ps=team.participants||[];
+    var done=ps.filter(function(p){return p.completed;});
+    if(ps.length!==k.participantTotal||done.length!==k.participantCount)return true;
+    return done.some(function(p){return p.completedAt&&new Date(p.completedAt)>generated;});
+  });
 }
 
-function renderTeamBlock(org,team){
+// Wat er sinds het genereren is veranderd, in gewone taal voor bij de badge.
+function orgReportChanges(org,report){
+  var teams=org.teams||[],known=report.teams||[],out=[];
+  teams.forEach(function(team){
+    var k=known.find(function(x){return x.id===team.id;});
+    if(!k){out.push('team '+team.name+' is toegevoegd');return;}
+    var s=teamStats(team);
+    if(k.name!==team.name)out.push('team '+k.name+' heet nu '+team.name);
+    var extra=s.done-k.participantCount;
+    if(extra>0)out.push(extra+' deelnemer'+(extra===1?'':'s')+' in '+team.name+' klaar');
+    else if(s.total!==k.participantTotal||extra!==0)out.push('deelnemers in '+team.name+' gewijzigd');
+  });
+  known.forEach(function(k){
+    if(!teams.some(function(t){return t.id===k.id;}))out.push('team '+k.name+' is verwijderd');
+  });
+  return out;
+}
+// Een teamrapport is net als het organisatierapport een momentopname.
+function isTeamReportStale(team,report){
+  var done=(team.participants||[]).filter(function(p){return p.completed;});
+  if(report.participantCount!=null&&done.length!==report.participantCount)return true;
+  var generated=new Date(report.generatedAt);
+  return done.some(function(p){return p.completedAt&&new Date(p.completedAt)>generated;});
+}
+// Elk rapport heeft één van vier standen; knoppen en teksten volgen daaruit.
+function reportState(report,canMake,stale){
+  if(!report)return canMake?'todo':'blocked';
+  return stale?'stale':'ok';
+}
+function teamStats(team){
   var ps=team.participants||[];
-  var completed=ps.filter(function(p){return p.completed;}).length;
-  var hasSome=completed>0;
+  return {total:ps.length,done:ps.filter(function(p){return p.completed;}).length};
+}
+function fmtDay(iso){return new Date(iso).toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'});}
+
+// ── ORGANISATIES: lijst links, organisatie of team rechts ──
+var orgSel=(function(){try{return JSON.parse(sessionStorage.getItem('orgSel'))||{};}catch(e){return {};}})();
+var teamStatusFilter='all';
+function selectOrgItem(orgId,teamId){
+  orgSel={orgId:orgId,teamId:teamId||null};
+  sessionStorage.setItem('orgSel',JSON.stringify(orgSel));
+  teamStatusFilter='all';
+  // Op mobiel wisselt de lijst naar de detailpagina.
+  document.getElementById('orgs-layout').classList.add('show-detail');
+  renderOrgs();
+}
+function currentOrgSel(){
+  var orgs=realOrgs();
+  var org=orgs.find(function(o){return o.id===orgSel.orgId;})||orgs[0]||null;
+  var team=org&&orgSel.teamId?(org.teams||[]).find(function(t){return t.id===orgSel.teamId;})||null:null;
+  return {org:org,team:team};
+}
+
+var KEBAB_ICON='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
+// items: {label,action,data,del} of 'sep' voor een scheidingslijn.
+function rowMenu(items){
+  return '<button type="button" class="menu-btn" data-action="toggleMenu" title="Meer acties" aria-label="Meer acties">'+KEBAB_ICON+'</button>'+
+    '<div class="row-menu">'+items.map(function(it){
+      if(it==='sep')return '<hr>';
+      var data=Object.keys(it.data||{}).map(function(k){return ' data-'+k+'="'+esc(it.data[k])+'"';}).join('');
+      return '<button type="button"'+(it.del?' class="del"':'')+' data-action="'+it.action+'"'+data+'>'+it.label+'</button>';
+    }).join('')+'</div>';
+}
+function closeRowMenus(){
+  document.querySelectorAll('.row-menu.open').forEach(function(m){m.classList.remove('open');});
+}
+// Het menu staat position:fixed, zodat een scrollende tabel het niet afsnijdt.
+function toggleRowMenu(btn){
+  var menu=btn.nextElementSibling;
+  var wasOpen=menu.classList.contains('open');
+  closeRowMenus();
+  if(wasOpen)return;
+  menu.classList.add('open');
+  var r=btn.getBoundingClientRect();
+  var top=r.bottom+4;
+  if(top+menu.offsetHeight>window.innerHeight-8)top=Math.max(8,r.top-menu.offsetHeight-4);
+  menu.style.top=top+'px';
+  menu.style.left=Math.max(8,r.right-menu.offsetWidth)+'px';
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('[data-action="toggleMenu"]'))closeRowMenus();
+},true);
+window.addEventListener('scroll',closeRowMenus,true);
+window.addEventListener('resize',closeRowMenus);
+
+function progressHtml(done,total){
+  if(!total)return '<span class="muted">Nog geen deelnemers</span>';
+  return '<div class="prog-cell"><div class="progress-bar"><div class="progress-fill" style="width:'+Math.round(done/total*100)+'%"></div></div>'+done+' van '+total+'</div>';
+}
+// Het bolletje is op het hele scherm het teken voor de rapportstatus:
+// groen is actueel, geel is verouderd.
+function repDot(state,label){
+  return '<i class="rep-dot'+(state?' '+state:'')+'"'+(label?' title="'+label+'"':'')+'></i>';
+}
+// Voortgang van een team als ringetje; een team zonder deelnemers heeft een lege ring.
+function progressRing(done,total){
+  var c=2*Math.PI*6;
+  var label=total?done+' van '+total+' afgerond':'Nog geen deelnemers';
+  return '<svg class="prog-ring" viewBox="0 0 16 16" role="img" aria-label="'+label+'"><title>'+label+'</title><circle cx="8" cy="8" r="6"/>'+
+    (done?'<circle class="arc" cx="8" cy="8" r="6" stroke-dasharray="'+(done/total*c).toFixed(2)+' '+c.toFixed(2)+'"/>':'')+'</svg>';
+}
+function reportStatusHtml(state,report){
+  if(state==='ok')return '<span class="rep-cell">'+repDot('ok')+fmtDay(report.generatedAt)+'</span>';
+  if(state==='stale')return '<span class="rep-cell">'+repDot('stale')+'Verouderd &middot; '+fmtDay(report.generatedAt)+'</span>';
+  return '<span class="muted">—</span>';
+}
+function reportBanner(state,title,note,buttons){
+  return '<div class="rep-banner"><div class="rep-text"><div class="rep-title">'+repDot(state==='ok'||state==='stale'?state:'')+title+'</div>'+
+    (note?'<div class="rep-note">'+note+'</div>':'')+'</div>'+
+    '<div class="orgs-actions">'+buttons+'</div></div>';
+}
+
+function renderOrgs(){
+  closeRowMenus();
+  var orgs=realOrgs();
+  document.getElementById('orgs-layout').classList.toggle('empty',!orgs.length);
+  if(!orgs.length){
+    document.getElementById('org-list').innerHTML='';
+    document.getElementById('org-detail').innerHTML='<div class="empty-state">Nog geen organisaties.<div style="margin-top:14px"><button class="btn btn-primary" onclick="openModal(\'modal-add-org\')">Nieuwe organisatie</button></div></div>';
+    return;
+  }
+  var sel=currentOrgSel();
+  document.getElementById('org-list').innerHTML=orgs.map(function(org){return renderOrgSideGroup(org,sel);}).join('')+
+    '<button type="button" class="orgs-add" onclick="openModal(\'modal-add-org\')">+ Organisatie toevoegen</button>';
+  document.getElementById('org-detail').innerHTML=sel.team?renderTeamPage(sel.org,sel.team):renderOrgPage(sel.org);
+}
+
+function renderOrgSideGroup(org,sel){
+  var orgReport=db.reports&&db.reports['org_'+org.id];
+  // In de lijst staat alleen een bolletje als een rapport aandacht vraagt.
+  var orgDot=orgReport&&isOrgReportStale(org,orgReport)?repDot('stale','Organisatierapport verouderd'):'';
+  var teams=(org.teams||[]).map(function(team){
+    var s=teamStats(team);
+    var report=db.reports&&db.reports[team.id];
+    var dot=report&&isTeamReportStale(team,report)?repDot('stale','Teamrapport verouderd'):'';
+    return '<button type="button" class="side-item side-team'+(sel.team&&sel.team.id===team.id?' sel':'')+'" data-action="selectTeam" data-org="'+org.id+'" data-team="'+team.id+'">'+
+      '<span class="name">'+esc(team.name)+'</span>'+dot+'<span class="count">'+(s.total?Math.round(s.done/s.total*100):0)+'%</span>'+progressRing(s.done,s.total)+'</button>';
+  }).join('');
+  return '<button type="button" class="side-item side-org'+(sel.org.id===org.id&&!sel.team?' sel':'')+'" data-action="selectOrg" data-org="'+org.id+'"><span class="name">'+esc(org.name)+'</span>'+orgDot+'</button>'+teams;
+}
+
+function orgsBackButton(){
+  return '<button type="button" class="orgs-back" data-action="orgsBack">&larr; Alle organisaties</button>';
+}
+
+function renderOrgPage(org){
+  var teams=org.teams||[];
+  var totals={total:0,done:0},made=0;
+  var gaps=[];
+  var rows=teams.map(function(team){
+    var s=teamStats(team);
+    totals.total+=s.total;totals.done+=s.done;
+    if(!s.total)gaps.push(esc(team.name)+' geen deelnemers');
+    else if(s.done<s.total)gaps.push(esc(team.name)+' '+s.done+' van '+s.total);
+    var report=db.reports&&db.reports[team.id];
+    var state=reportState(report,s.done>0,report&&isTeamReportStale(team,report));
+    if(report)made++;
+    var ids={org:org.id,team:team.id};
+    var genAttrs=' data-action="genTeamReport" data-org="'+org.id+'" data-team="'+team.id+'"';
+    var repBtn=
+      state==='todo'?'<button class="btn btn-secondary"'+genAttrs+'>Rapport genereren</button>':
+      state==='stale'?'<button class="btn btn-secondary"'+genAttrs+'>Bijwerken</button>':
+      state==='ok'?'<button class="btn btn-secondary" data-action="viewReport" data-team="'+team.id+'">Bekijken</button>':'';
+    var menu=[{label:'Team openen',action:'selectTeam',data:ids}];
+    if(state==='stale')menu.push({label:'Teamrapport bekijken',action:'viewReport',data:ids});
+    if(state==='ok')menu.push({label:'Teamrapport opnieuw genereren',action:'genTeamReport',data:ids});
+    menu.push('sep',{label:'Team verwijderen',action:'deleteTeam',data:ids,del:true});
+    return '<tr class="clickable" data-action="selectTeam" data-org="'+org.id+'" data-team="'+team.id+'">'+
+      '<td class="cell-name">'+esc(team.name)+'</td>'+
+      '<td>'+progressHtml(s.done,s.total)+'</td>'+
+      '<td>'+reportStatusHtml(state,report)+'</td>'+
+      '<td>'+(repBtn||'<span class="muted">—</span>')+'</td>'+
+      '<td class="act"><div class="act-row">'+rowMenu(menu)+'</div></td></tr>';
+  }).join('');
+
+  var report=db.reports&&db.reports['org_'+org.id];
+  var state=reportState(report,totals.done>0,report&&isOrgReportStale(org,report));
+  var gapNote=gaps.length?' Niet compleet: '+gaps.join(', ')+'.':'';
+  var viewBtn=report?'<button class="btn btn-secondary" data-action="viewStoredReport" data-rkey="'+esc(report.id)+'">Bekijken</button>':'';
+  var banner;
+  if(state==='blocked'){
+    banner=reportBanner(state,'Nog geen organisatierapport','Dat kan zodra minstens één deelnemer de vragenlijst heeft afgerond.',
+      '<button class="btn btn-primary" disabled>Organisatierapport genereren</button>');
+  }else if(state==='todo'){
+    banner=reportBanner(state,'Nog geen organisatierapport',totals.done+' van '+totals.total+' deelnemers zijn klaar.'+gapNote,
+      '<button class="btn btn-primary" data-action="genOrgReport" data-org="'+org.id+'">Organisatierapport genereren</button>');
+  }else if(state==='ok'){
+    banner=reportBanner(state,'Organisatierapport is actueel','Gegenereerd op '+fmtDay(report.generatedAt)+'.',
+      viewBtn+'<button class="btn btn-secondary" data-action="genOrgReport" data-org="'+org.id+'">Opnieuw genereren</button>');
+  }else{
+    var changes=orgReportChanges(org,report).map(esc);
+    banner=reportBanner(state,'Organisatierapport is verouderd','Gegenereerd op '+fmtDay(report.generatedAt)+'. '+
+      (changes.length?'Sindsdien: '+changes.join(', ')+'.':'Sindsdien zijn teams of deelnemers gewijzigd.')+gapNote,
+      viewBtn+'<button class="btn btn-primary" data-action="genOrgReport" data-org="'+org.id+'">Bijwerken</button>');
+  }
+
+  var menu=[{label:'Organisatie verwijderen',action:'deleteOrg',data:{org:org.id},del:true}];
+
+  return orgsBackButton()+
+    '<div class="orgs-head"><div><div class="orgs-crumb">Organisatie</div><h2>'+esc(org.name)+'</h2></div>'+
+    '<div class="orgs-actions">'+rowMenu(menu)+'</div></div>'+
+    banner+
+    (teams.length?
+      '<div class="orgs-table"><table><thead><tr><th>Team</th><th>Voortgang</th><th>Gegenereerd op</th><th>Teamrapport</th><th></th></tr></thead><tbody>'+rows+
+      '<tr class="total"><td>Totaal</td><td>'+totals.done+' van '+totals.total+' afgerond</td><td>'+made+' van '+teams.length+' gegenereerd</td><td></td><td></td></tr>'+
+      '</tbody></table></div>':
+      '<div class="orgs-none">Nog geen teams.</div>')+
+    '<button type="button" class="orgs-add" data-action="addTeam" data-org="'+org.id+'">+ Team toevoegen</button>';
+}
+
+function renderTeamPage(org,team){
+  var ps=team.participants||[];
+  var s=teamStats(team);
   var activeQs=db.questions.filter(function(q){return q.active;});
   var report=db.reports&&db.reports[team.id];
-  var rows=ps.map(function(p){
-    var prog=p.completed?100:activeQs.length?Math.round((p.answerCount||0)/activeQs.length*100):0;
-    var badge=p.completed?'<span class="badge badge-green">Afgerond</span>':p.loggedIn?'<span class="badge badge-yellow">Bezig</span>':'<span class="badge badge-gray">Niet gestart</span>';
-    var actBtns='';
-    if(p.completed){
-      actBtns+='<button class="btn btn-sm btn-ghost" style="white-space:nowrap;font-size:11px" data-action="viewResults" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(p.name)+'">Resultaten</button>';
-      actBtns+='<button class="btn btn-sm btn-ghost" style="white-space:nowrap;font-size:11px" data-action="viewIndividualReport" data-pid="'+p.id+'">Rapport</button>';
-      actBtns+='<button class="btn btn-sm btn-secondary" style="white-space:nowrap;font-size:11px" data-action="genIndividualForPid" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(p.name)+'">Genereer</button>';
-    }
-    var pName=p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
-    return '<tr>'+
-      '<td>'+esc(pName)+'</td>'+
-      '<td><span class="copy-btn" data-action="copyLink" data-code="'+esc(p.code)+'" data-pid="'+esc(p.id)+'" id="cbtn-'+esc(p.id)+'">kopieer link</span></td>'+
-      '<td>'+badge+'</td>'+
-      '<td>'+(p.completedAt?fmtDate(p.completedAt):'')+'</td>'+
-      '<td style="text-align:right;white-space:nowrap"><div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">'+actBtns+'</div></td>'+
-      '<td style="text-align:right;width:28px"><button style="background:none;border:none;cursor:pointer;color:var(--gray-mid);font-size:15px;padding:2px 6px;line-height:1" data-action="deleteParticipant" data-pid="'+p.id+'" data-pname="'+encodeURIComponent(pName)+'" title="Verwijder deelnemer">&times;</button></td></tr>';
+  var state=reportState(report,s.done>0,report&&isTeamReportStale(team,report));
+  var genAttrs=' data-action="genTeamReport" data-org="'+org.id+'" data-team="'+team.id+'"';
+  var viewBtn='<button class="btn btn-secondary" data-action="viewReport" data-team="'+team.id+'">Bekijken</button>';
+  var banner;
+  if(!ps.length){
+    banner=reportBanner(state,'Nog geen deelnemers','Voeg deelnemers toe en stuur ze hun deelnamelink.',
+      '<button class="btn btn-primary" data-action="addParticipant" data-team="'+team.id+'">Deelnemer toevoegen</button>');
+  }else if(state==='blocked'){
+    banner=reportBanner(state,'Nog niemand is klaar','Het teamrapport kan zodra minstens één deelnemer de vragenlijst heeft afgerond.',
+      '<button class="btn btn-primary" disabled>Teamrapport genereren</button>');
+  }else if(state==='todo'){
+    banner=s.done===s.total?
+      reportBanner(state,s.total===1?'De deelnemer is klaar':'Alle '+s.total+' deelnemers zijn klaar','Je kunt het teamrapport genereren.',
+        '<button class="btn btn-primary"'+genAttrs+'>Teamrapport genereren</button>'):
+      reportBanner(state,s.done+' van '+s.total+' deelnemers zijn klaar','Je kunt nu al een teamrapport genereren, of wachten op de rest.',
+        '<button class="btn btn-primary"'+genAttrs+'>Teamrapport genereren</button>');
+  }else if(state==='ok'){
+    banner=reportBanner(state,'Teamrapport is actueel','Gegenereerd op '+fmtDay(report.generatedAt)+'.',
+      viewBtn+'<button class="btn btn-secondary"'+genAttrs+'>Opnieuw genereren</button>');
+  }else{
+    banner=reportBanner(state,'Teamrapport is verouderd','Gegenereerd op '+fmtDay(report.generatedAt)+'. Sindsdien zijn er deelnemers klaar of gewijzigd; nu zijn '+s.done+' van '+s.total+' klaar.',
+      viewBtn+'<button class="btn btn-primary"'+genAttrs+'>Bijwerken</button>');
+  }
+
+  function statusOf(p){return p.completed?'done':p.loggedIn?'busy':'todo';}
+  var counts={todo:0,busy:0,done:0};
+  ps.forEach(function(p){counts[statusOf(p)]++;});
+  var tabs=[['all','Alle',ps.length],['todo','Niet gestart',counts.todo],['busy','Bezig',counts.busy],['done','Afgerond',counts.done]].map(function(c){
+    return '<button type="button" class="orgs-tab'+(teamStatusFilter===c[0]?' on':'')+'" data-action="teamFilter" data-filter="'+c[0]+'">'+c[1]+'<span>'+c[2]+'</span></button>';
   }).join('');
-  return '<div class="team-block" id="tblock-'+team.id+'">'+
-    '<div class="team-header" data-action="toggleTeam" data-team="'+team.id+'" style="cursor:pointer">'+
-    '<div style="display:flex;align-items:center;gap:8px"><div class="team-title">'+esc(team.name)+'</div>'+
-    '<div class="team-meta">'+ps.length+' deelnemers &bull; '+completed+' afgerond</div></div>'+
-    '<div style="display:flex;gap:6px;align-items:center">'+
-    (report?'<button class="btn btn-sm btn-ghost" data-action="viewReport" data-org="'+org.id+'" data-team="'+team.id+'">Rapport bekijken</button>':'')+
-    (hasSome?'<button class="btn btn-sm btn-primary" style="font-size:12px;padding:6px 12px" data-action="teamDetail" data-org="'+org.id+'" data-team="'+team.id+'">Rapport genereren</button>':'')+
-    '<button style="background:none;border:none;cursor:pointer;color:#E63946;font-size:18px;padding:2px 8px;line-height:1;font-weight:700" data-action="deleteTeam" data-org="'+org.id+'" data-team="'+team.id+'" title="Verwijder team">&times;</button>'+
-    '<svg class="team-toggle-icon" id="ttoggle-'+team.id+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;transition:transform .3s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>'+
-    '</div></div>'+
-    '<div class="team-block-body" id="tbody-'+team.id+'">'+
+
+  var rows=ps.filter(function(p){return teamStatusFilter==='all'||statusOf(p)===teamStatusFilter;}).map(function(p){
+    var pName=p.name||[p.firstName,p.lastName].filter(Boolean).join(' ')||'—';
+    var pEnc=encodeURIComponent(pName);
+    var status=statusOf(p);
+    var prog=activeQs.length?Math.round((p.answerCount||0)/activeQs.length*100):0;
+    var badge=status==='done'?'<span class="badge badge-green">Afgerond</span>':
+      status==='busy'?'<span class="badge badge-yellow">Bezig &middot; '+prog+'%</span>':'<span class="badge badge-gray">Niet gestart</span>';
+    var pReport=db.reports&&db.reports['individual_'+p.id];
+    var linkBtn='<button class="btn btn-secondary" data-action="copyLink" data-code="'+esc(p.code)+'" data-pid="'+esc(p.id)+'" id="cbtn-'+esc(p.id)+'">Kopieer link</button>';
+    var repBtn=
+      !p.completed?'<span class="muted">—</span>':
+      pReport?'<button class="btn btn-secondary" data-action="viewIndividualReport" data-pid="'+p.id+'">Bekijken</button>':
+      '<button class="btn btn-secondary" data-action="genIndividualForPid" data-pid="'+p.id+'" data-pname="'+pEnc+'">Rapport genereren</button>';
+    var menu=[];
+    if(p.completed)menu.push({label:'Antwoorden bekijken',action:'viewResults',data:{pid:p.id,pname:pEnc}});
+    if(pReport)menu.push({label:'Individueel rapport opnieuw genereren',action:'regenIndividual',data:{pid:p.id,pname:pEnc}});
+    if(menu.length)menu.push('sep');
+    menu.push({label:'Deelnemer verwijderen',action:'deleteParticipant',data:{pid:p.id,pname:pEnc},del:true});
+    return '<tr>'+
+      '<td class="cell-name">'+esc(pName)+'</td>'+
+      '<td>'+linkBtn+'</td>'+
+      '<td>'+badge+'</td>'+
+      '<td>'+(p.completedAt?fmtDate(p.completedAt):'<span class="muted">—</span>')+'</td>'+
+      '<td>'+reportStatusHtml(pReport?'ok':'blocked',pReport)+'</td>'+
+      '<td>'+repBtn+'</td>'+
+      '<td class="act"><div class="act-row">'+rowMenu(menu)+'</div></td></tr>';
+  }).join('');
+
+  var menu=[{label:'Team verwijderen',action:'deleteTeam',data:{org:org.id,team:team.id},del:true}];
+
+  return orgsBackButton()+
+    '<div class="orgs-head"><div><div class="orgs-crumb"><button type="button" data-action="selectOrg" data-org="'+org.id+'">'+esc(org.name)+'</button></div><h2>'+esc(team.name)+'</h2></div>'+
+    '<div class="orgs-actions">'+rowMenu(menu)+'</div></div>'+
+    banner+
     (ps.length?
-    '<table><thead><tr><th>Naam</th><th>Deelnamelink</th><th>Status</th><th>Afgerond op</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table>':'')+
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-border)">'+
-    '<button class="btn btn-sm btn-secondary" data-action="addParticipant" data-team="'+team.id+'">+ Deelnemer toevoegen</button>'+
-    '</div>'+
-    '</div>'+  /* close team-block-body */
-    '</div>';
+      '<div class="orgs-tabs">'+tabs+'</div>'+
+      '<div class="orgs-table"><table><thead><tr><th>Naam</th><th>Deelnamelink</th><th>Status</th><th>Afgerond op</th><th>Gegenereerd op</th><th>Individueel rapport</th><th></th></tr></thead><tbody>'+
+      (rows||'<tr><td colspan="7" class="muted">Geen deelnemers met deze status.</td></tr>')+
+      '</tbody></table></div>'+
+      '<button type="button" class="orgs-add" data-action="addParticipant" data-team="'+team.id+'">+ Deelnemer toevoegen</button>':'');
 }
 
-function toggleTeamCollapse(teamId){
-  var body=document.getElementById('tbody-'+teamId);
-  var icon=document.getElementById('ttoggle-'+teamId);
-  if(!body)return;
-  body.classList.toggle('collapsed');
-  if(icon)icon.style.transform=body.classList.contains('collapsed')?'rotate(-90deg)':'';
+// Opnieuw maken vervangt het bestaande rapport, dus dat vraagt eerst een
+// bevestiging (net als bij het organisatierapport).
+function requestTeamReport(orgId,teamId){
+  var existing=db.reports&&db.reports[teamId];
+  if(!existing){generateReport(orgId,teamId);return;}
+  confirmAction(
+    'Er is al een teamrapport',
+    'Er is al een teamrapport, gegenereerd op '+fmtDate(existing.generatedAt)+'. Wil je een nieuw rapport genereren? Het bestaande rapport wordt dan vervangen.',
+    function(){generateReport(orgId,teamId);},
+    {label:'Nieuw rapport genereren',className:'btn btn-primary'}
+  );
 }
-function toggleOrgCollapse(orgId){
-  var org=db.organisations.find(function(o){return o.id===orgId;});
-  if(org){org.collapsed=!org.collapsed;}
-  var card=document.getElementById('org-'+orgId);
-  if(card)card.classList.toggle('collapsed');
+function requestIndividualReport(pid,pname){
+  var existing=db.reports&&db.reports['individual_'+pid];
+  function run(){currentResultsPid=pid;currentResultsPname=pname;generateIndividualReport();}
+  if(!existing){run();return;}
+  confirmAction(
+    'Er is al een individueel rapport',
+    'Er is al een individueel rapport voor '+pname+', gegenereerd op '+fmtDate(existing.generatedAt)+'. Wil je een nieuw rapport genereren? Het bestaande rapport wordt dan vervangen.',
+    run,
+    {label:'Nieuw rapport genereren',className:'btn btn-primary'}
+  );
 }
 
 async function addOrganisation(){
@@ -1331,9 +1678,9 @@ async function addOrganisation(){
   var res=await fetch('/api/admin/organisations',{method:'POST',headers:{'Content-Type':'application/json','x-admin-token':adminToken},body:JSON.stringify({name:name})});
   var org=await res.json();
   if(!org.id){showNotice('Fout bij toevoegen organisatie.','warning');return;}
-  org.teams=org.teams||[];org.collapsed=false;
+  org.teams=org.teams||[];
   db.organisations.push(org);
-  closeModal('modal-add-org');document.getElementById('input-org-name').value='';renderOrgs();
+  closeModal('modal-add-org');document.getElementById('input-org-name').value='';selectOrgItem(org.id,null);
 }
 function deleteOrg(id){
   confirmAction('Organisatie verwijderen','Weet je zeker dat je deze organisatie wilt verwijderen? Alle teams en deelnemers worden ook verwijderd.',async function(){
@@ -1353,7 +1700,7 @@ async function addTeam(){
   if(!org.teams)org.teams=[];
   team.participants=team.participants||[];
   org.teams.push(team);
-  closeModal('modal-add-team');renderOrgs();
+  closeModal('modal-add-team');selectOrgItem(orgId,team.id);
 }
 function deleteTeam(orgId,teamId){
   confirmAction('Team verwijderen','Weet je zeker dat je dit team wilt verwijderen? Alle deelnemers en antwoorden worden ook verwijderd.',async function(){
@@ -1398,10 +1745,8 @@ function copyLinkToClipboard(code,pid){
   try{document.execCommand('copy');}catch(e){}
   document.body.removeChild(ta);
   if(navigator.clipboard){navigator.clipboard.writeText(link).catch(function(){});}
-  ['cbtn-','mcbtn-'].forEach(function(prefix){
-    var btn=document.getElementById(prefix+pid);
-    if(btn){btn.textContent='gekopieerd!';btn.classList.add('copied');setTimeout(function(){btn.textContent='kopieer link';btn.classList.remove('copied');},2000);}
-  });
+  var btn=document.getElementById('cbtn-'+pid);
+  if(btn){var orig=btn.textContent;btn.textContent='Gekopieerd!';btn.classList.add('copied');setTimeout(function(){btn.textContent=orig;btn.classList.remove('copied');},2000);}
 }
 
 // ── QUESTIONS ──
@@ -1604,6 +1949,11 @@ function renderReports(){
   }
   db.organisations.forEach(function(org){
     if(filterOrgId&&org.id!==filterOrgId)return;
+    var orgReport=db.reports&&db.reports['org_'+org.id];
+    // Een organisatierapport hoort bij geen enkel team, dus het valt weg zodra er op een team gefilterd is.
+    if(orgReport&&!filterTeamId){
+      items.push({label:org.name,org:org.name,rkey:orgReport.id,r:orgReport,isOrg:true,stale:isOrgReportStale(org,orgReport)});
+    }
     (org.teams||[]).forEach(function(team){
       if(db.reports&&db.reports[team.id]){
         if(!filterTeamId||team.id===filterTeamId)
@@ -1621,10 +1971,10 @@ function renderReports(){
   });
   if(!items.length){c.innerHTML='<div class="empty-state">Nog geen rapporten gegenereerd.</div>';return;}
   c.innerHTML=items.map(function(x){
-    var badge=x.isTeam
-      ?'<span class="badge badge-gray" style="font-size:10px">Team</span>'
-      :'<span class="badge badge-gray" style="font-size:10px">Individueel</span>';
-    var sub=esc(x.org)+(x.team?' &bull; '+esc(x.team):'')+' &bull; '+fmtDate(x.r.generatedAt);
+    var badge='<span class="badge badge-gray" style="font-size:10px">'+(x.isOrg?'Organisatie':x.isTeam?'Team':'Individueel')+'</span>'+
+      (x.stale?' <span class="badge badge-yellow" style="font-size:10px" title="'+ORG_STALE_HINT+'">Verouderd</span>':'');
+    var sub=(x.isOrg?x.r.participantCount+' deelnemers uit '+orgIncludedTeams(x.r).length+' team(s)':esc(x.org))+
+      (x.team?' &bull; '+esc(x.team):'')+' &bull; '+fmtDate(x.r.generatedAt);
     return '<div class="report-list-item">'+
       '<div><div class="rli-title" style="display:flex;align-items:center;gap:8px">'+esc(x.label)+' '+badge+'</div>'+
       '<div class="rli-sub">'+sub+'</div></div>'+
@@ -1672,6 +2022,11 @@ async function viewParticipantResults(pid,pname){
 }
 
 var currentReportTeamId=null;
+// Het geopende rapport wordt onthouden zodat een refresh het opnieuw toont.
+function setCurrentReport(rkey){
+  currentReportTeamId=rkey;
+  if(rkey)sessionStorage.setItem('adminReport',rkey);else sessionStorage.removeItem('adminReport');
+}
 var reportingTeam=null;
 // Scoring and AI advice now happen server-side, so a failed AI call becomes a
 // visible warning instead of a report with silently empty advice.
@@ -1690,19 +2045,16 @@ async function runReportGeneration(payload,busyText){
   }
 }
 
-async function generateReport(){
-  if(!currentTeamForReport)return;
-  var orgId=currentTeamForReport.orgId,teamId=currentTeamForReport.teamId;
+async function generateReport(orgId,teamId){
   var org=db.organisations.find(function(o){return o.id===orgId;});
   var team=org&&org.teams.find(function(t){return t.id===teamId;});
   if(!org||!team){showNotice('Team niet gevonden.','warning');return;}
   var ps=team.participants.filter(function(p){return p.completed;});
   if(!ps.length){showNotice('Geen afgeronde deelnemers om een rapport van te genereren.','info');return;}
-  closeModal('modal-team-detail');
   try{
-    var report=await runReportGeneration({type:'team',teamId:teamId},'Rapport wordt gegenereerd voor '+team.name+'...');
+    var report=await runReportGeneration({type:'team',teamId:teamId},'Teamrapport wordt gegenereerd voor '+team.name+'...');
     renderOrgs();
-    currentReportTeamId=report.id;
+    setCurrentReport(report.id);
     document.getElementById('save-confirm').classList.remove('visible');
     setReportToolbar(false);
     document.getElementById('report-frame').innerHTML=buildReport(org,team,report,false);
@@ -1722,7 +2074,7 @@ async function generateIndividualReport(){
   try{
     var report=await runReportGeneration({type:'individual',participantId:foundP.id},'Individueel rapport wordt gegenereerd voor '+foundP.firstName+'...');
     renderOrgs();
-    currentReportTeamId=report.id;
+    setCurrentReport(report.id);
     document.getElementById('save-confirm').classList.remove('visible');
     setReportToolbar(false);
     document.getElementById('report-frame').innerHTML=buildReport({name:foundOrg.name},{name:foundP.name+' (individueel)'},report,false);
@@ -1730,6 +2082,41 @@ async function generateIndividualReport(){
     autoResizeAllTextareas();
   }catch(e){
     showNotice(e.message||'Rapport genereren is mislukt.','warning');
+  }
+}
+// Opnieuw genereren vervangt het bestaande organisatierapport, dus dat vraagt
+// eerst een bevestiging.
+function requestOrgReport(orgId){
+  var existing=db.reports&&db.reports['org_'+orgId];
+  if(!existing){generateOrgReport(orgId);return;}
+  confirmAction(
+    'Er is al een organisatierapport',
+    'Er is al een organisatierapport, gegenereerd op '+fmtDate(existing.generatedAt)+'. Wil je een nieuw rapport genereren? Het bestaande rapport wordt dan vervangen.',
+    function(){generateOrgReport(orgId);},
+    {label:'Nieuw rapport genereren',className:'btn btn-primary'}
+  );
+}
+// Een organisatierapport mag nooit stilzwijgend een team missen: de server
+// weigert (409) zolang er lege of deels ingevulde teams zijn en de beheerder
+// dat niet uitdrukkelijk heeft bevestigd.
+async function generateOrgReport(orgId,confirmed){
+  var org=db.organisations.find(function(o){return o.id===orgId;});
+  if(!org){showNotice('Organisatie niet gevonden.','warning');return;}
+  try{
+    var report=await runReportGeneration({type:'organisation',orgId:orgId,confirmIncomplete:!!confirmed},'Organisatierapport wordt gegenereerd voor '+org.name+'...');
+    renderOrgs();
+    viewStoredReport(report.id);
+  }catch(e){
+    var incomplete=e.status===409&&e.data&&e.data.incompleteTeams;
+    if(!incomplete){showNotice(e.message||'Rapport genereren is mislukt.','warning');return;}
+    confirmAction(
+      'Niet alle teams zijn compleet',
+      'Deze teams zijn leeg of nog niet volledig ingevuld:\n\n'+
+        incomplete.map(function(t){return '• '+t.name+': '+t.participantCount+' van '+t.participantTotal+' afgerond';}).join('\n')+
+        '\n\nHet rapport vermeldt welke teams ontbreken. Wil je het toch genereren?',
+      function(){generateOrgReport(orgId,true);},
+      {label:'Toch genereren',className:'btn btn-primary'}
+    );
   }
 }
 function viewReport(orgId,teamId){viewStoredReport(teamId);}
@@ -1742,9 +2129,13 @@ function viewStoredReport(rkey){
   if(!report.tAvgs||Object.keys(report.tAvgs).length===0){
     showNotice('Rapport is onvolledig. Genereer het rapport opnieuw.','warning');return;
   }
-  currentReportTeamId=rkey;
+  setCurrentReport(rkey);
   var org,team;
-  if(report.isIndividual){
+  var isOrg=report.type==='organisation';
+  if(isOrg){
+    org=db.organisations.find(function(o){return o.id===report.orgId;});
+    team={name:'Organisatierapport'};
+  } else if(report.isIndividual){
     db.organisations.forEach(function(o){(o.teams||[]).forEach(function(t){if(t.id===report.teamId){org=o;team=t;}});});
     // override team name with participant name
     team=Object.assign({},team,{name:report.participantName+' (individueel)'});
@@ -1754,7 +2145,7 @@ function viewStoredReport(rkey){
   }
   if(!org||!team){showNotice('Organisatie niet gevonden.','warning');return;}
   document.getElementById('save-confirm').classList.remove('visible');
-  setReportToolbar(false);
+  setReportToolbar(false,isOrg);
   document.getElementById('report-frame').innerHTML=buildReport(org,team,report,false);
   showView('report');
   autoResizeAllTextareas();
@@ -1799,7 +2190,7 @@ function openReportPreview(){
     participantCount:PARTICIPANTS,aiAdvice:{},
     questions:qs,dimensions:currentDimensionsSnapshot()||undefined
   };
-  currentReportTeamId=null;
+  setCurrentReport(null);
   document.getElementById('save-confirm').classList.remove('visible');
   document.getElementById('report-frame').innerHTML=
     buildReport({name:'Voorbeeld Organisatie'},{name:'Voorbeeldteam'},report,true);
@@ -1808,10 +2199,12 @@ function openReportPreview(){
 }
 
 // In een preview valt er niets op te slaan of te delen; alleen PDF blijft nuttig.
-function setReportToolbar(isPreview){
+// Een organisatierapport heeft geen bewerkbare tekst, dus daar vervalt opslaan.
+function setReportToolbar(isPreview,noEdits){
   document.querySelectorAll('#view-report .report-toolbar-right .btn').forEach(function(b){
-    var pdf=b.getAttribute('onclick')==='downloadReportPdf()';
-    b.style.display=(isPreview&&!pdf)?'none':'';
+    var action=b.getAttribute('onclick');
+    var hide=isPreview?action!=='downloadReportPdf()':(noEdits&&action==='saveReportEdits()');
+    b.style.display=hide?'none':'';
   });
 }
 
@@ -1823,7 +2216,8 @@ function downloadReportPdf(){
   document.querySelectorAll('style').forEach(function(s){if(!s.textContent.includes('app-toast'))styles+=s.outerHTML;});
   var w=window.open('','_blank','width=900,height=700');
   if(!w){showNotice('Pop-up geblokkeerd door de browser. Sta pop-ups toe voor deze pagina.','warning');return;}
-  var title='Team APK Rapport';
+  var current=db.reports&&db.reports[currentReportTeamId];
+  var title=current&&current.type==='organisation'?'Team APK Organisatierapport':'Team APK Rapport';
   // <base>: de fonts staan nu op relatieve /fonts/-paden en moeten ook in het
   // losse printvenster (about:blank) tegen dit domein resolven.
   w.document.write('<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><base href="'+location.origin+'/"><title>'+title+'</title>'+
@@ -1844,6 +2238,12 @@ function downloadReportPdf(){
     '  .rpt-ov-wrap{padding:0 20px !important;}'+
     '  .rpt-body{padding:0 20px;}'+
     '  .rpt-footer{padding:12px 20px;}'+
+    '  .rpt-org-block{padding:0 20px 16px !important;}'+
+    // Op papier valt er niets te scrollen: de teamvergelijking is daarom al in
+    // tabellen van beperkte breedte opgeknipt.
+    '  .rpt-org-scroll{overflow:visible !important;}'+
+    '  .rpt-org-card,.rpt-org-row,.rpt-org-table tr{break-inside:avoid;page-break-inside:avoid;}'+
+    '  .rpt-org-compare{break-before:page;page-break-before:always;}'+
     // Niets mag halverwege een regel, kaart of kop worden afgekapt.
     '  .rpt-q-block,.rpt-ov-row,.rpt-dim-card,.rpt-legend-row,.rpt-theme-header,.rpt-ai-box{break-inside:avoid;page-break-inside:avoid;}'+
     '  .rpt-section{break-inside:avoid;page-break-inside:avoid;}'+
@@ -1868,7 +2268,7 @@ function downloadReportPdf(){
     '</body></html>');
   w.document.close();
 }
-function backFromReport(){showView('admin');adminTab('organisations');}
+function backFromReport(){setCurrentReport(null);showView('admin');adminTab('organisations');}
 
 function autoResizeAllTextareas(){
   document.querySelectorAll('.rpt-ai-text').forEach(function(ta){
@@ -1978,9 +2378,161 @@ function themeOverviewGroupsHTML(report,dimList){
   html+=groupHTML('Overige subthema\'s',rest);
   return html;
 }
+// ── ORGANISATIERAPPORT ─────────────────────────────
+// Teams die in de cijfers zijn meegeteld: minstens één afgeronde deelnemer.
+function orgIncludedTeams(report){
+  return (report.teams||[]).filter(function(t){return t.participantCount>0;});
+}
+function scoreCellHTML(s){
+  if(s===undefined||s===null)return '<span style="color:var(--gray-mid)">&ndash;</span>';
+  return '<span class="rpt-org-cell" style="background:'+scorePale(s)+';color:'+scoreText(s)+'">'+s+'</span>';
+}
+// Subthema's per Team Shapers Thema, in rapportvolgorde; subthema's zonder
+// hoofdthema komen als laatste groep.
+function reportThemeGroups(report,dimList){
+  var seen={},groups=[];
+  dimList.forEach(function(d){
+    var themes=(d.themes||[]).filter(function(t){
+      if(report.tAvgs[t]===undefined||seen[t])return false;
+      seen[t]=true;return true;
+    });
+    if(themes.length)groups.push({name:d.name,themes:themes});
+  });
+  var rest=Object.keys(report.tAvgs).filter(function(t){return !seen[t];});
+  if(rest.length)groups.push({name:'Overige subthema\'s',themes:rest});
+  return groups;
+}
+// Responsoverzicht: maakt zichtbaar welke teams wel, deels of niet in het
+// rapport zitten, zodat een ontbrekend team nooit ongemerkt blijft.
+function orgCoverageHTML(report){
+  var teams=report.teams||[];
+  var STATUS={complete:['badge-green','Volledig'],partial:['badge-yellow','Deels ingevuld'],empty:['badge-gray','Niet meegenomen']};
+  function pct(done,total){return total?Math.round(done/total*100)+'%':'&ndash;';}
+  var missing=teams.filter(function(t){return t.status==='empty';}).map(function(t){return t.name;});
+  var partial=teams.filter(function(t){return t.status==='partial';}).map(function(t){return t.name+' ('+t.participantCount+' van '+t.participantTotal+')';});
+  var alert=(missing.length||partial.length)
+    ?'<div class="alert alert-yellow" style="margin-bottom:16px;font-family:var(--font)">Let op: niet alle teams zijn volledig meegenomen.'+
+      (missing.length?' Niet meegenomen: '+esc(missing.join(', '))+'.':'')+
+      (partial.length?' Deels ingevuld: '+esc(partial.join(', '))+'.':'')+'</div>'
+    :'';
+  var rows=teams.map(function(t){
+    var st=STATUS[t.status]||STATUS.empty;
+    return '<tr><td>'+esc(t.name)+'</td><td>'+t.participantTotal+'</td><td>'+t.participantCount+'</td>'+
+      '<td>'+pct(t.participantCount,t.participantTotal)+'</td>'+
+      '<td><span class="badge '+st[0]+'">'+st[1]+'</span></td></tr>';
+  }).join('');
+  return '<div class="rpt-org-block">'+
+    '<h2>Respons per team</h2>'+
+    '<p class="rpt-org-intro">De organisatiescores zijn berekend over alle afgeronde deelnemers samen. Elke deelnemer telt even zwaar, dus een groot team weegt zwaarder dan een klein team.</p>'+
+    alert+
+    '<div class="rpt-org-scroll"><table class="rpt-org-table">'+
+    '<thead><tr><th>Team</th><th>Deelnemers</th><th>Afgerond</th><th>Respons</th><th>Status</th></tr></thead>'+
+    '<tbody>'+rows+
+    '<tr class="rpt-org-total"><td>Totaal</td><td>'+report.participantTotal+'</td><td>'+report.participantCount+'</td>'+
+    '<td>'+pct(report.participantCount,report.participantTotal)+'</td><td></td></tr>'+
+    '</tbody></table></div></div>';
+}
+function orgInsightsHTML(report){
+  var themes=Object.keys(report.tAvgs);
+  // Bij weinig subthema's mogen de lijstjes "hoogste" en "laagste" elkaar niet overlappen.
+  var n=Math.min(3,Math.max(1,Math.floor(themes.length/2)));
+  var byScore=themes.slice().sort(function(a,b){return report.tAvgs[b]-report.tAvgs[a];});
+  function scoreRows(list){
+    return list.map(function(t){
+      return '<div class="rpt-org-row"><div class="rpt-org-row-name">'+esc(t)+'</div>'+scoreCellHTML(report.tAvgs[t])+'</div>';
+    }).join('');
+  }
+  function card(title,desc,rows){
+    return rows?'<div class="rpt-org-card"><h3>'+title+'</h3><p>'+desc+'</p>'+rows+'</div>':'';
+  }
+
+  var teams=orgIncludedTeams(report);
+  var gaps=teams.length<2?[]:themes.map(function(t){
+    var scored=teams.filter(function(x){return x.tAvgs[t]!==undefined;}).sort(function(a,b){return b.tAvgs[t]-a.tAvgs[t];});
+    if(scored.length<2)return null;
+    var hi=scored[0],lo=scored[scored.length-1];
+    return {theme:t,hi:hi,lo:lo,gap:Math.round((hi.tAvgs[t]-lo.tAvgs[t])*10)/10};
+  }).filter(function(g){return g&&g.gap>0;}).sort(function(a,b){return b.gap-a.gap;}).slice(0,3);
+  var gapRows=gaps.map(function(g){
+    return '<div class="rpt-org-row"><div class="rpt-org-row-name">'+esc(g.theme)+
+      '<div class="rpt-org-row-sub">'+esc(g.hi.name)+' '+g.hi.tAvgs[g.theme]+' &bull; '+esc(g.lo.name)+' '+g.lo.tAvgs[g.theme]+'</div></div>'+
+      '<div style="font-weight:700;white-space:nowrap">'+g.gap+'</div></div>';
+  }).join('');
+
+  // Verdeeldheid = standaarddeviatie van de ruwe antwoorden (1-5) per subthema.
+  var qs=reportQuestions(report);
+  var spread=report.participantCount<2?[]:themes.map(function(t){
+    var vals=[];
+    qs.forEach(function(q){
+      var iv=q.theme===t&&report.qIndividual&&report.qIndividual[q.id];
+      if(iv)vals=vals.concat(iv);
+    });
+    if(vals.length<2)return null;
+    var mean=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    var sd=Math.sqrt(vals.reduce(function(a,v){return a+(v-mean)*(v-mean);},0)/vals.length);
+    return {theme:t,sd:sd,vals:vals};
+  }).filter(function(s){return s&&s.sd>0;}).sort(function(a,b){return b.sd-a.sd;}).slice(0,3);
+  var spreadRows=spread.map(function(s){
+    return '<div class="rpt-org-row"><div class="rpt-org-row-name">'+esc(s.theme)+'</div>'+
+      '<div style="width:45%">'+buildSpreadBar(s.vals,report.tAvgs[s.theme])+'</div></div>';
+  }).join('');
+
+  return '<div class="rpt-org-block">'+
+    '<h2>Sterktes en aandachtspunten</h2>'+
+    '<div class="rpt-org-insights">'+
+    card('Hoogste scores','De subthema\'s waar de organisatie het sterkst op scoort.',scoreRows(byScore.slice(0,n)))+
+    card('Laagste scores','De subthema\'s die organisatiebreed de meeste aandacht vragen.',scoreRows(byScore.slice(-n).reverse()))+
+    card('Grootste verschil tussen teams','Hier kunnen teams van elkaar leren. Het getal is het verschil tussen het hoogst en het laagst scorende team.',gapRows)+
+    card('Meeste verdeeldheid','De subthema\'s waar de antwoorden binnen de organisatie het verst uiteenlopen.',spreadRows)+
+    '</div></div>';
+}
+// Teams als kolommen, subthema's als rijen. Meer dan MAX_COLS teams worden over
+// meerdere tabellen verdeeld, zodat de vergelijking ook op A4 past.
+function orgTeamComparisonHTML(report,dimList){
+  var teams=orgIncludedTeams(report);
+  if(!teams.length)return '';
+  var MAX_COLS=6;
+  var groups=reportThemeGroups(report,dimList);
+  function dimScore(themes,tAvgs){
+    var vals=themes.map(function(t){return tAvgs[t];}).filter(function(v){return v!==undefined;});
+    return vals.length?Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length*10)/10:undefined;
+  }
+  function tableHTML(cols){
+    function row(label,cls,orgVal,pick){
+      return '<tr class="'+cls+'"><td>'+esc(label)+'</td><td>'+scoreCellHTML(orgVal)+'</td>'+
+        cols.map(function(t){return '<td>'+scoreCellHTML(pick(t))+'</td>';}).join('')+'</tr>';
+    }
+    var body=row('Algehele score','rpt-org-strong',report.overall,function(t){return t.overall;});
+    groups.forEach(function(g){
+      body+=row(g.name,'rpt-org-strong',dimScore(g.themes,report.tAvgs),function(t){return dimScore(g.themes,t.tAvgs);});
+      g.themes.forEach(function(theme){
+        body+=row(theme,'rpt-org-sub',report.tAvgs[theme],function(t){return t.tAvgs[theme];});
+      });
+    });
+    return '<div class="rpt-org-scroll"><table class="rpt-org-table">'+
+      '<thead><tr><th>Subthema</th><th>Organisatie</th>'+
+      cols.map(function(t){
+        return '<th>'+esc(t.name)+'<div style="font-weight:400;text-transform:none;letter-spacing:0">'+
+          t.participantCount+' deelnemer'+(t.participantCount!==1?'s':'')+'</div></th>';
+      }).join('')+
+      '</tr></thead><tbody>'+body+'</tbody></table></div>';
+  }
+  var tables='';
+  for(var i=0;i<teams.length;i+=MAX_COLS)tables+=tableHTML(teams.slice(i,i+MAX_COLS));
+  var left=(report.teams||[]).filter(function(t){return !t.participantCount;}).map(function(t){return t.name;});
+  return '<div class="rpt-org-block rpt-org-compare">'+
+    '<h2>Teamvergelijking</h2>'+
+    '<p class="rpt-org-intro">De scores per team naast het organisatiegemiddelde. Vetgedrukte rijen zijn de Team Shapers Thema\'s, daaronder staan de bijbehorende subthema\'s.'+
+    (left.length?' Niet in deze tabel, omdat er geen afgeronde deelnemers zijn: '+esc(left.join(', '))+'.':'')+'</p>'+
+    tables+'</div>';
+}
+
 function buildReport(org,team,report,readonly){
   var today=new Date().toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'});
   var done=report.participantCount||1;
+  var isOrg=report.type==='organisation';
+  var reportTitle=isOrg?'Team APK Organisatierapport':'Team APK Rapport';
+  var orgTeamCount=isOrg?orgIncludedTeams(report).length:0;
 
   var THEME_DESC={
     'Doelen':'Een teamdoel is hetgeen waar je samen als team naartoe werkt.',
@@ -1999,9 +2551,12 @@ function buildReport(org,team,report,readonly){
   // ── COVER PAGE ─────────────────────────────────────
   var coverHTML=
     '<div class="rpt-cover-page" style="padding:56px 48px 24px;background:white;">'+
-    '<h1 style="font-size:34px;font-weight:700;color:var(--black);margin-bottom:8px;font-family:var(--font)">Team APK Rapport</h1>'+
+    '<h1 style="font-size:34px;font-weight:700;color:var(--black);margin-bottom:8px;font-family:var(--font)">'+reportTitle+'</h1>'+
     '<div style="margin-bottom:36px;display:flex;flex-direction:column;gap:5px;">'+
-    [['Team',esc(team.name)],['Organisatie',esc(org.name)],['Datum',today]].map(function(r){
+    (isOrg
+      ?[['Organisatie',esc(org.name)],['Teams',orgTeamCount+' van '+(report.teams||[]).length+' meegenomen'],['Datum',today]]
+      :[['Team',esc(team.name)],['Organisatie',esc(org.name)],['Datum',today]]
+    ).map(function(r){
       return '<div style="font-size:14px;font-family:var(--font)">'+
         '<span style="color:var(--gray-mid);display:inline-block;min-width:100px">'+r[0]+'</span>'+
         '<span style="color:var(--gray-mid);font-weight:600">'+r[1]+'</span></div>';
@@ -2010,16 +2565,23 @@ function buildReport(org,team,report,readonly){
     '<div style="display:flex;align-items:flex-start;gap:48px;">'+
     // Left: score + intro text
     '<div style="flex:1">'+
-    '<h2 style="font-size:22px;font-weight:700;color:var(--black);margin-bottom:22px;font-family:var(--font)">Hoe staat jouw team ervoor?</h2>'+
-    '<p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:14px;font-family:var(--font)">Voor je ligt de rapportage van de Team APK. Geen oordeel en geen eindconclusie, maar een spiegel van hoe jullie naar de samenwerking kijken.</p>'+
-    '<p style="font-size:13px;color:#555;line-height:1.75;margin-bottom:14px;font-family:var(--font)">De uitkomsten laten zien waar jullie op &eacute;&eacute;n lijn zitten, en waar de beelden uit elkaar lopen. Juist daar wordt het interessant. Want daar ontstaat vaak ruis: in afspraken, eigenaarschap, verwachtingen of opvolging.</p>'+
-    '<p style="font-size:13px;color:#555;line-height:1.75;font-family:var(--font)">Gebruik deze rapportage als startpunt voor het echte gesprek: wat herkennen we, wat vraagt aandacht en wat gaan we anders doen?</p>'+
+    '<h2 style="font-size:22px;font-weight:700;color:var(--black);margin-bottom:22px;font-family:var(--font)">'+(isOrg?'Hoe staat jullie organisatie ervoor?':'Hoe staat jouw team ervoor?')+'</h2>'+
+    (isOrg
+      ?['Voor je ligt de organisatierapportage van de Team APK. Hierin komen de uitkomsten van alle teams samen. Geen oordeel en geen eindconclusie, maar een spiegel van hoe de organisatie naar de samenwerking kijkt.',
+        'De uitkomsten laten zien wat de teams gemeen hebben, en waar de beelden tussen en binnen teams uit elkaar lopen. Juist daar wordt het interessant, want daar valt van elkaar te leren.',
+        'Gebruik deze rapportage als startpunt voor het echte gesprek: wat herkennen we organisatiebreed, wat vraagt aandacht en wat pakken we per team op?']
+      :['Voor je ligt de rapportage van de Team APK. Geen oordeel en geen eindconclusie, maar een spiegel van hoe jullie naar de samenwerking kijken.',
+        'De uitkomsten laten zien waar jullie op &eacute;&eacute;n lijn zitten, en waar de beelden uit elkaar lopen. Juist daar wordt het interessant. Want daar ontstaat vaak ruis: in afspraken, eigenaarschap, verwachtingen of opvolging.',
+        'Gebruik deze rapportage als startpunt voor het echte gesprek: wat herkennen we, wat vraagt aandacht en wat gaan we anders doen?']
+    ).map(function(text,i,all){
+      return '<p style="font-size:13px;color:#555;line-height:1.75;'+(i<all.length-1?'margin-bottom:14px;':'')+'font-family:var(--font)">'+text+'</p>';
+    }).join('')+
     '</div>'+
     // Right: big score circle
     '<div style="display:flex;flex-direction:column;align-items:center;padding-top:8px">'+
     '<div style="width:120px;height:120px;border-radius:22px;background:var(--purple);color:white;font-size:40px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(124,48,156,.3);font-family:var(--font)">'+report.overall+'</div>'+
     '<div style="font-size:11px;color:var(--gray-mid);margin-top:9px;text-transform:uppercase;letter-spacing:.06em;text-align:center;font-family:var(--font)">Algehele score</div>'+
-    (done?'<div style="font-size:11px;color:var(--gray-mid);margin-top:4px;text-align:center;font-family:var(--font)">'+done+' deelnemer'+(done!==1?'s':'')+'</div>':'')+
+    (done?'<div style="font-size:11px;color:var(--gray-mid);margin-top:4px;text-align:center;font-family:var(--font)">'+done+' deelnemer'+(done!==1?'s':'')+(isOrg?' uit '+orgTeamCount+' team'+(orgTeamCount!==1?'s':''):'')+'</div>':'')+
     '</div></div></div>';
 
   // ── DIMENSIONS OVERVIEW ────────────────────────────
@@ -2049,9 +2611,9 @@ function buildReport(org,team,report,readonly){
     '<div class="rpt-legend" style="padding:0 32px;">'+
     '<div style="max-width:460px;margin-bottom:44px;">'+
     '<h2 style="font-size:11px;font-weight:700;color:var(--gray-mid);text-transform:uppercase;letter-spacing:.1em;margin:48px 0 10px;font-family:var(--font)">Legenda</h2>'+
-    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-band" style="left:64%;width:26%;background:var(--green)"></div><div class="rpt-spread-avg" style="left:78%;background:var(--green);box-shadow:0 0 0 1px var(--green)"></div></div><span style="font-size:12px;font-family:var(--font)">Smalle band: er is een hoge mate van consensus in het team</span></div>'+
+    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-band" style="left:64%;width:26%;background:var(--green)"></div><div class="rpt-spread-avg" style="left:78%;background:var(--green);box-shadow:0 0 0 1px var(--green)"></div></div><span style="font-size:12px;font-family:var(--font)">Smalle band: er is een hoge mate van consensus '+(isOrg?'binnen de organisatie':'in het team')+'</span></div>'+
     '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-band" style="left:20%;width:70%;background:var(--yellow)"></div><div class="rpt-spread-avg" style="left:60%;background:var(--yellow);box-shadow:0 0 0 1px var(--yellow)"></div></div><span style="font-size:12px;font-family:var(--font)">Brede band: de beleving loopt uiteen</span></div>'+
-    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-avg" style="left:75%;background:var(--purple);box-shadow:0 0 0 1px var(--purple)"></div></div><span style="font-size:12px;font-family:var(--font)">Stip: de gemiddelde teamscore</span></div>'+
+    '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--gray-border)"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-avg" style="left:75%;background:var(--purple);box-shadow:0 0 0 1px var(--purple)"></div></div><span style="font-size:12px;font-family:var(--font)">Stip: de gemiddelde '+(isOrg?'organisatiescore':'teamscore')+'</span></div>'+
     '<div class="rpt-legend-row" style="display:flex;align-items:center;gap:12px;padding:7px 0"><div class="rpt-spread-track" style="width:100px;flex:none"><div class="rpt-spread-base"></div><div class="rpt-spread-ind" style="left:30%;background:var(--purple)"></div><div class="rpt-spread-ind" style="left:52%;background:var(--purple)"></div><div class="rpt-spread-ind" style="left:70%;background:var(--purple)"></div><div class="rpt-spread-ind" style="left:84%;background:var(--purple)"></div></div><span style="font-size:12px;font-family:var(--font)">Lichte stippen: antwoorden van de afzonderlijke deelnemers</span></div>'+
     '</div></div>'+
 
@@ -2126,9 +2688,11 @@ function buildReport(org,team,report,readonly){
 
     return '<div class="rpt-page">'+
     '<div class="rpt-header"><img src="'+LOGO_WIT+'" alt="Team Shapers">'+
-    '<div class="rpt-meta">Team APK Rapport<br>'+esc(org.name)+' &bull; '+esc(team.name)+'</div></div>'+
+    '<div class="rpt-meta">'+reportTitle+'<br>'+esc(org.name)+(isOrg?'':' &bull; '+esc(team.name))+'</div></div>'+
     coverHTML+
+    (isOrg?orgCoverageHTML(report)+orgInsightsHTML(report):'')+
     dimHTML+
+    (isOrg?orgTeamComparisonHTML(report,dimList):'')+
     '<div class="rpt-body">'+themeHTML+'</div>'+
     '<div class="rpt-footer">'+
     '<img src="'+LOGO_WIT+'" alt="Team Shapers">'+
@@ -2144,7 +2708,7 @@ function buildReport(org,team,report,readonly){
     'Gegenereerd op '+today+'</div>'+
     '<div class="rpt-footer-item">'+
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'+
-    'Response: '+report.participantCount+' deelnemer(s)</div>'+
+    'Response: '+(isOrg?report.participantCount+' van '+report.participantTotal+' deelnemers':report.participantCount+' deelnemer(s)')+'</div>'+
     '</div></div>'+
     '</div>';
 }
@@ -2259,34 +2823,51 @@ async function participantLogin(){
     var data=await res.json();
     if(!res.ok){
       document.documentElement.style.visibility='';
-      if(res.status===400&&data.error&&data.error.includes('al ingevuld')){
+      if(data.alreadyCompleted){
         err.style.display='none';
         showView('survey');
-        document.getElementById('survey-intro').style.display='none';
-        document.getElementById('survey-question').style.display='none';
-        document.getElementById('survey-complete').style.display='';
+        showSurveyPanel('redo');
         return;
       }
       showView('landing');
       err.style.display='block';return;
     }
-    var p=data;
-    currentParticipant=p;
     err.style.display='none';
-    var qRes=await fetch('/api/questions');
-    var qData=await qRes.json();
-    surveyQuestions=qData.questions.filter(function(q){return q.active;});
-    db.themes=qData.themes;
-    db.answers=db.answers||{};
-    db.answers[p.id]=db.answers[p.id]||{};
-    document.getElementById('intro-welcome').textContent='Welkom, '+(p.firstName||p.name)+'!';
-    document.documentElement.style.visibility='';
-    showView('survey');
-    document.getElementById('survey-intro').style.display='';
-    document.getElementById('survey-question').style.display='none';
-    document.getElementById('survey-complete').style.display='none';
-    updateProgress();
+    await enterSurvey(data);
   }catch(e){document.documentElement.style.visibility='';showView('landing');err.style.display='block';}
+}
+// Toont precies één van de schermen binnen de vragenlijst.
+function showSurveyPanel(panel){
+  ['intro','question','complete','redo'].forEach(function(n){
+    document.getElementById('survey-'+n).style.display=n!==panel?'none':n==='question'?'flex':'';
+  });
+}
+async function enterSurvey(p){
+  currentParticipant=p;
+  var qRes=await fetch('/api/questions');
+  var qData=await qRes.json();
+  surveyQuestions=qData.questions.filter(function(q){return q.active;});
+  db.themes=qData.themes;
+  db.answers=db.answers||{};
+  db.answers[p.id]=db.answers[p.id]||{};
+  document.getElementById('intro-welcome').textContent='Welkom, '+(p.firstName||p.name)+'!';
+  document.documentElement.style.visibility='';
+  showView('survey');
+  showSurveyPanel('intro');
+  updateProgress();
+}
+// Opnieuw invullen: de server start een leeg concept. De eerdere antwoorden
+// blijven staan tot dit concept is afgerond.
+async function startRedo(){
+  var code=document.getElementById('p-code').value.trim().toUpperCase();
+  try{
+    var p=await api('/api/participant/redo',{method:'POST',body:{code:code}});
+    db.answers=db.answers||{};
+    db.answers[p.id]={};
+    await enterSurvey(p);
+  }catch(e){
+    showNotice(e.message||'Opnieuw invullen starten is mislukt.','warning');
+  }
 }
 document.getElementById('p-code').addEventListener('keydown',function(e){if(e.key==='Enter')participantLogin();});
 
@@ -2435,7 +3016,7 @@ function surveyPrev(){if(currentQIndex>0){currentQIndex--;renderQ(true);}}
 function viewIndividualReportForPid(pid){
   var rkey='individual_'+pid;
   var report=db.reports&&db.reports[rkey];
-  if(!report){showNotice('Nog geen individueel rapport. Klik op "Genereer" om er een te maken.','info');return;}
+  if(!report){showNotice('Er is nog geen individueel rapport voor deze deelnemer.','info');return;}
   viewStoredReport(rkey);
 }
 
@@ -2591,10 +3172,13 @@ function deleteTheme(theme){
 }
 
 // ── CONFIRM DIALOG ──
-function confirmAction(title,msg,onConfirm){
+// opts is alleen nodig voor een bevestiging die geen verwijdering is.
+function confirmAction(title,msg,onConfirm,opts){
   document.getElementById('confirm-delete-title').textContent=title;
   document.getElementById('confirm-delete-msg').textContent=msg;
   var btn=document.getElementById('confirm-delete-btn');
+  btn.textContent=(opts&&opts.label)||'Verwijderen';
+  btn.className=(opts&&opts.className)||'btn btn-danger';
   btn.onclick=function(){closeModal('modal-confirm-delete');onConfirm();};
   openModal('modal-confirm-delete');
 }
@@ -2656,43 +3240,6 @@ function openPreview(){
     'function prevQ(i){show(i-1);}'+
     'show(0);<\/script></body></html>');
   win.document.close();
-}
-
-// ── TEAM DETAIL MODAL ──
-var currentTeamForReport=null;
-async function openTeamDetail(orgId,teamId){
-  var org=db.organisations.find(function(o){return o.id===orgId;});
-  var team=org&&org.teams.find(function(t){return t.id===teamId;});
-  if(!org||!team){showNotice('Team niet gevonden.','warning');return;}
-  currentTeamForReport={orgId:orgId,teamId:teamId};
-  var ps=team.participants||[];
-  // Load answers for participants that haven't been loaded yet
-  try{
-    await Promise.all(ps.map(async function(p){
-      if(!db.answers[p.id]){
-        db.answers[p.id]=await api('/api/admin/answers/'+p.id,{admin:true});
-      }
-    }));
-  }catch(e){
-    showNotice(e.message||'Antwoorden konden niet geladen worden.','warning');return;
-  }
-  var completed=ps.filter(function(p){return p.completed;}).length;
-  document.getElementById('modal-team-title').textContent=team.name+' ('+org.name+')';
-  var btn=document.getElementById('btn-generate-report');
-  btn.disabled=completed===0;
-  var activeQs=db.questions.filter(function(q){return q.active;});
-  var info=completed===0?'<div class="alert alert-yellow">Wacht tot minimaal 1 deelnemer klaar is.</div>':'';
-  info+='<table><thead><tr><th>Naam</th><th>Code</th><th>Status</th><th>%</th></tr></thead><tbody>'+
-    ps.map(function(p){
-      var ans=db.answers[p.id]||{};
-      var prog=activeQs.length?Math.round(Object.keys(ans).length/activeQs.length*100):0;
-      var badge=p.completed?'<span class="badge badge-green">Afgerond</span>':p.loggedIn?'<span class="badge badge-yellow">Bezig</span>':'<span class="badge badge-gray">Niet gestart</span>';
-      return '<tr><td>'+esc(p.name)+'</td>'+
-        '<td><span class="copy-btn" data-action="copyLink" data-code="'+esc(p.code)+'" data-pid="'+esc(p.id)+'" id="mcbtn-'+esc(p.id)+'">kopieer link</span></td>'+
-        '<td>'+badge+'</td><td>'+prog+'%</td></tr>';
-    }).join('')+'</tbody></table>';
-  document.getElementById('modal-team-content').innerHTML=info;
-  openModal('modal-team-detail');
 }
 
 // ── PARTICIPANT SELECTION ──
@@ -3055,8 +3602,9 @@ document.addEventListener('click',function(e){
   if(a==='copyLink'){e.stopPropagation();copyLinkToClipboard(el.dataset.code,el.dataset.pid);}
   if(a==='addTeam'){e.stopPropagation();openAddTeam(el.dataset.org);}
   if(a==='deleteOrg'){e.stopPropagation();deleteOrg(el.dataset.org);}
+  if(a==='genOrgReport'){e.stopPropagation();requestOrgReport(el.dataset.org);}
   if(a==='addParticipant'){e.stopPropagation();openAddParticipant(el.dataset.team);}
-  if(a==='teamDetail'){e.stopPropagation();openTeamDetail(el.dataset.org,el.dataset.team);}
+  if(a==='genTeamReport'){e.stopPropagation();requestTeamReport(el.dataset.org,el.dataset.team);}
   if(a==='deleteTeam'){e.stopPropagation();deleteTeam(el.dataset.org,el.dataset.team);}
   if(a==='toggleQ'){e.stopPropagation();toggleQ(el.dataset.qid);}
   if(a==='deleteQ'){e.stopPropagation();deleteQ(el.dataset.qid);}
@@ -3071,8 +3619,12 @@ document.addEventListener('click',function(e){
   if(a==='viewIndividualReport'){e.stopPropagation();viewIndividualReportForPid(el.dataset.pid);}
   if(a==='genIndividualForPid'){e.stopPropagation();currentResultsPid=el.dataset.pid;currentResultsPname=decodeURIComponent(el.dataset.pname||'');generateIndividualReport();}
   if(a==='viewResults'){e.stopPropagation();viewParticipantResults(el.dataset.pid,el.dataset.pname);}
-  if(a==='toggleOrg'){if(!e.target.closest('button')&&!e.target.closest('svg')){toggleOrgCollapse(el.dataset.org);}}
-  if(a==='toggleTeam'){if(!e.target.closest('button')&&!e.target.closest('svg')){toggleTeamCollapse(el.dataset.team);}}
+  if(a==='selectOrg'){selectOrgItem(el.dataset.org,null);}
+  if(a==='selectTeam'){selectOrgItem(el.dataset.org,el.dataset.team);}
+  if(a==='orgsBack'){document.getElementById('orgs-layout').classList.remove('show-detail');}
+  if(a==='teamFilter'){teamStatusFilter=el.dataset.filter;renderOrgs();}
+  if(a==='toggleMenu'){e.stopPropagation();toggleRowMenu(el);}
+  if(a==='regenIndividual'){requestIndividualReport(el.dataset.pid,decodeURIComponent(el.dataset.pname||''));}
   if(a==='deleteThemeBtn'){
     e.stopPropagation();
     var t=el.dataset.theme;
@@ -3158,14 +3710,22 @@ checkShareParam();
 // Auto-restore admin session on page refresh
 (async function restoreAdminSession(){
   if(!adminToken)return;
+  // Terug naar waar de beheerder was: het tabblad, of het rapport dat openstond.
+  var tab=sessionStorage.getItem('adminTab');
+  var rkey=sessionStorage.getItem('adminReport');
   try{
     await loadAdminData();
-    showView('admin');renderAdmin();
+    showView('admin');
+    adminTab(tab&&document.getElementById('tab-'+tab)?tab:'dashboard');
+    if(rkey&&db.reports[rkey])viewStoredReport(rkey);else setCurrentReport(null);
   }catch(e){
     // Expired or revoked token: drop it and go back to the login screen rather
     // than leaving a half-loaded admin shell on screen.
     adminToken=null;sessionStorage.removeItem('adminToken');
     showView('landing');
+  }finally{
+    // De pagina is in <head> verborgen zodat het inlogscherm niet even opflitst.
+    document.documentElement.style.visibility='';
   }
 })();
 </script>

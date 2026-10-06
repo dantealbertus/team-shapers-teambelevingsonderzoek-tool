@@ -100,6 +100,7 @@ De backend is al volledig klaar — alle endpoints zijn beschikbaar.
 | Method | Endpoint | Beschrijving |
 |--------|----------|-------------|
 | POST | `/api/participant/login` | Deelnemer inloggen met code |
+| POST | `/api/participant/redo` | Afgeronde vragenlijst opnieuw invullen; de nieuwe antwoorden vervangen de oude pas bij het afronden |
 | GET | `/api/questions` | Actieve vragen ophalen |
 | POST | `/api/answers` | Antwoorden opslaan |
 | POST | `/api/answers/complete` | Vragenlijst afronden |
@@ -115,6 +116,7 @@ De backend is al volledig klaar — alle endpoints zijn beschikbaar.
 | GET/POST/PUT/DELETE | `/api/admin/questions` | Vragen beheren |
 | POST/DELETE | `/api/admin/themes` | Thema's beheren |
 | GET/POST/DELETE | `/api/admin/reports` | Rapporten beheren |
+| POST | `/api/admin/reports/generate` | Rapport genereren; `type` is `individual`, `team` of `organisation` (met `orgId`). Een organisatierapport met lege of deels ingevulde teams geeft 409 tot `confirmIncomplete: true` wordt meegestuurd |
 | POST | `/api/ai/advice` | AI-advies genereren (proxied) |
 
 ---
@@ -123,7 +125,7 @@ De backend is al volledig klaar — alle endpoints zijn beschikbaar.
 
 De tool bevat de volgende technische maatregelen:
 
-- **Volledige verwijdering**: het verwijderen van een deelnemer, team, organisatie of rapport verwijdert ook de bijbehorende rapporten en deellinks (inclusief snapshots met naam en scores).
+- **Volledige verwijdering**: het verwijderen van een deelnemer, team, organisatie of rapport verwijdert ook de bijbehorende rapporten en deellinks (inclusief snapshots met naam en scores). Het organisatierapport is een momentopname: het blijft staan als een team of deelnemer wordt verwijderd, wordt dan in het dashboard als verouderd gemarkeerd, en verdwijnt bij het verwijderen van de organisatie of na de bewaartermijn.
 - **Bewaartermijn**: persoonsgegevens (deelnemers, antwoorden, rapporten, deellinks) worden automatisch verwijderd na de ingestelde bewaartermijn (standaard 12 maanden, instelbaar op het admin-dashboard, 1–120 maanden). De opschoning draait bij het opstarten en daarna dagelijks.
 - **Self-hosted fonts**: alle fonts worden vanaf het eigen domein geserveerd (`public/fonts/`); er gaan geen bezoekers-IP's meer naar Google Fonts of cdnfonts.com.
 - **Dataminimalisatie richting AI**: de naam van de deelnemer wordt niet meegestuurd naar de Anthropic API — alleen geaggregeerde scores, team- en organisatienaam.

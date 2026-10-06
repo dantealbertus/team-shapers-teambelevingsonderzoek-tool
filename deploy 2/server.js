@@ -190,6 +190,15 @@ async function initDB() {
   // Which shareable lead link a lead came in through (NULL for the legacy link).
   await pool.query("ALTER TABLE participants ADD COLUMN IF NOT EXISTS lead_link_token TEXT");
   await pool.query("CREATE INDEX IF NOT EXISTS idx_participants_lead_link ON participants (lead_link_token)");
+  // Opnieuw invullen: de nieuwe antwoorden staan apart tot de deelnemer afrondt,
+  // zodat de bestaande antwoorden en rapporten tot dat moment intact blijven.
+  await pool.query("ALTER TABLE participants ADD COLUMN IF NOT EXISTS redoing BOOLEAN DEFAULT FALSE");
+  await pool.query(`CREATE TABLE IF NOT EXISTS redo_answers (
+    participant_id TEXT REFERENCES participants(id) ON DELETE CASCADE,
+    question_id TEXT NOT NULL,
+    value INTEGER NOT NULL CHECK (value BETWEEN 1 AND 5),
+    PRIMARY KEY (participant_id, question_id)
+  )`);
 
   // Seed default dimensions + theme→dimension mapping (only on first run)
   const dimCount = await pool.query('SELECT COUNT(*) as c FROM dimensions');
@@ -299,7 +308,7 @@ async function deleteReportsAndShares(client, reportIds) {
 async function verifyParticipant(participantId, code) {
   if (!participantId || !code) return null;
   const res = await pool.query(
-    'SELECT id, completed FROM participants WHERE id = $1 AND code = $2',
+    'SELECT id, completed, redoing FROM participants WHERE id = $1 AND code = $2',
     [participantId, String(code).trim().toUpperCase()]
   );
   return res.rows[0] || null;
@@ -322,6 +331,30 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
+async function findParticipantByCode(code) {
+  const result = await pool.query(
+    `SELECT p.*, t.name as team_name, t.id as team_id, o.name as org_name
+     FROM participants p
+     JOIN teams t ON p.team_id = t.id
+     JOIN organisations o ON t.org_id = o.id
+     WHERE p.code = $1`, [String(code).trim().toUpperCase()]
+  );
+  return result.rows[0] || null;
+}
+
+function participantSession(p) {
+  return {
+    id: p.id,
+    firstName: p.first_name,
+    lastName: p.last_name,
+    name: [p.first_name, p.last_name].filter(Boolean).join(' '),
+    code: p.code,
+    teamId: p.team_id,
+    teamName: p.team_name,
+    orgName: p.org_name
+  };
+}
+
 app.post('/api/participant/login', async (req, res) => {
   try {
     if (!rateLimit('p-login:' + req.ip, 60, 15 * 60 * 1000)) {
@@ -329,29 +362,45 @@ app.post('/api/participant/login', async (req, res) => {
     }
     const { code } = req.body || {};
     if (!code) return res.status(400).json({ error: 'Code ontbreekt' });
-    const result = await pool.query(
-      `SELECT p.*, t.name as team_name, t.id as team_id, o.name as org_name
-       FROM participants p
-       JOIN teams t ON p.team_id = t.id
-       JOIN organisations o ON t.org_id = o.id
-       WHERE p.code = $1`, [String(code).trim().toUpperCase()]
-    );
-    if (!result.rows.length) return res.status(404).json({ error: 'Code niet gevonden' });
-    const p = result.rows[0];
-    if (p.completed) return res.status(400).json({ error: 'Je hebt de vragenlijst al ingevuld' });
+    const p = await findParticipantByCode(code);
+    if (!p) return res.status(404).json({ error: 'Code niet gevonden' });
+    // alreadyCompleted laat de client aanbieden om opnieuw in te vullen.
+    if (p.completed) return res.status(400).json({ error: 'Je hebt de vragenlijst al ingevuld', alreadyCompleted: true });
     await pool.query('UPDATE participants SET logged_in = TRUE WHERE id = $1', [p.id]);
-    res.json({
-      id: p.id,
-      firstName: p.first_name,
-      lastName: p.last_name,
-      name: [p.first_name, p.last_name].filter(Boolean).join(' '),
-      code: p.code,
-      teamId: p.team_id,
-      teamName: p.team_name,
-      orgName: p.org_name
-    });
+    res.json(participantSession(p));
   } catch (e) {
     fail(res, 500, 'Inloggen is mislukt. Probeer het opnieuw.', e);
+  }
+});
+
+// Opnieuw invullen begint altijd met een leeg concept. De bestaande antwoorden
+// en rapporten blijven staan tot het concept wordt afgerond (zie applyRedo).
+app.post('/api/participant/redo', async (req, res) => {
+  let client;
+  let inTransaction = false;
+  try {
+    if (!rateLimit('p-login:' + req.ip, 60, 15 * 60 * 1000)) {
+      return res.status(429).json({ error: 'Te veel pogingen. Probeer het later opnieuw.' });
+    }
+    const { code } = req.body || {};
+    if (!code) return res.status(400).json({ error: 'Code ontbreekt' });
+    const p = await findParticipantByCode(code);
+    if (!p) return res.status(404).json({ error: 'Code niet gevonden' });
+    if (!p.completed) return res.status(400).json({ error: 'De vragenlijst is nog niet afgerond.' });
+
+    client = await pool.connect();
+    await client.query('BEGIN');
+    inTransaction = true;
+    await client.query('DELETE FROM redo_answers WHERE participant_id = $1', [p.id]);
+    await client.query('UPDATE participants SET redoing = TRUE WHERE id = $1', [p.id]);
+    await client.query('COMMIT');
+    inTransaction = false;
+    res.json(participantSession(p));
+  } catch (e) {
+    if (client && inTransaction) await client.query('ROLLBACK').catch(() => {});
+    fail(res, 500, 'Opnieuw invullen starten is mislukt. Probeer het opnieuw.', e);
+  } finally {
+    if (client) client.release();
   }
 });
 
@@ -395,7 +444,11 @@ app.post('/api/answers', async (req, res) => {
     }
     const participant = await verifyParticipant(participantId, code);
     if (!participant) return res.status(403).json({ error: 'Niet geautoriseerd' });
-    if (participant.completed) return res.status(409).json({ error: 'Je hebt de vragenlijst al ingevuld' });
+    if (participant.completed && !participant.redoing) {
+      return res.status(409).json({ error: 'Je hebt de vragenlijst al ingevuld' });
+    }
+    // Tijdens opnieuw invullen gaan antwoorden naar het concept.
+    const table = participant.completed ? 'redo_answers' : 'answers';
 
     const entries = Object.entries(answers);
     if (!entries.length) return res.json({ ok: true });
@@ -413,7 +466,7 @@ app.post('/api/answers', async (req, res) => {
     inTransaction = true;
     for (const [qid, val] of entries) {
       await client.query(
-        `INSERT INTO answers (participant_id, question_id, value)
+        `INSERT INTO ${table} (participant_id, question_id, value)
          VALUES ($1, $2, $3)
          ON CONFLICT (participant_id, question_id) DO UPDATE SET value = $3`,
         [participantId, qid, Number(val)]
@@ -430,15 +483,62 @@ app.post('/api/answers', async (req, res) => {
   }
 });
 
+// Pas bij het afronden vervangt het concept de bestaande antwoorden. Het oude
+// individuele rapport hoort bij de oude antwoorden en gaat dus mee weg;
+// autoGenerateReports maakt daarna een nieuw. Team- en organisatierapporten
+// zijn momentopnames en blijven staan.
+async function applyRedo(participantId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const draft = await client.query(
+      'SELECT COUNT(*)::int AS c FROM redo_answers WHERE participant_id = $1',
+      [participantId]
+    );
+    if (!draft.rows[0].c) {
+      await client.query('ROLLBACK');
+      return { error: 'Er zijn geen nieuwe antwoorden om in te dienen.' };
+    }
+    await client.query('DELETE FROM answers WHERE participant_id = $1', [participantId]);
+    await client.query(
+      `INSERT INTO answers (participant_id, question_id, value)
+       SELECT participant_id, question_id, value FROM redo_answers WHERE participant_id = $1`,
+      [participantId]
+    );
+    await client.query('DELETE FROM redo_answers WHERE participant_id = $1', [participantId]);
+    const reports = await client.query(
+      'SELECT id FROM reports WHERE id = $1 OR participant_id = $2',
+      ['individual_' + participantId, participantId]
+    );
+    await deleteReportsAndShares(client, reports.rows.map(r => r.id));
+    await client.query(
+      'UPDATE participants SET redoing = FALSE, completed_at = NOW() WHERE id = $1',
+      [participantId]
+    );
+    await client.query('COMMIT');
+    return {};
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 app.post('/api/answers/complete', async (req, res) => {
   try {
     const { participantId, code } = req.body || {};
     const participant = await verifyParticipant(participantId, code);
     if (!participant) return res.status(403).json({ error: 'Niet geautoriseerd' });
-    await pool.query(
-      'UPDATE participants SET completed = TRUE, completed_at = NOW() WHERE id = $1',
-      [participantId]
-    );
+    if (participant.completed && participant.redoing) {
+      const result = await applyRedo(participantId);
+      if (result.error) return res.status(409).json({ error: result.error });
+    } else {
+      await pool.query(
+        'UPDATE participants SET completed = TRUE, completed_at = NOW() WHERE id = $1',
+        [participantId]
+      );
+    }
     res.json({ ok: true });
     // Reports involve an AI call that can take a minute — never make the
     // participant wait for it.
@@ -1313,6 +1413,86 @@ async function generateIndividualReport(participantId) {
   return { report, aiWarning };
 }
 
+// Organisatierapport: alle afgeronde deelnemers van alle teams samen. Elke
+// deelnemer telt even zwaar, dus een groot team weegt zwaarder dan een klein.
+// Teams die niet compleet zijn blokkeren niet, maar vragen wel een expliciete
+// bevestiging: een rapport mag nooit stilzwijgend een team missen.
+async function generateOrgReport(orgId, confirmIncomplete) {
+  const orgRes = await pool.query('SELECT id FROM organisations WHERE id = $1', [orgId]);
+  if (!orgRes.rows.length) return { error: 'Organisatie niet gevonden.', status: 404 };
+
+  const teamRes = await pool.query('SELECT id, name FROM teams WHERE org_id = $1 ORDER BY created_at', [orgId]);
+  const pRes = await pool.query(
+    'SELECT id, team_id, completed FROM participants WHERE team_id = ANY($1::text[])',
+    [teamRes.rows.map(t => t.id)]
+  );
+  const teams = teamRes.rows.map(t => {
+    const ps = pRes.rows.filter(p => p.team_id === t.id);
+    const doneIds = ps.filter(p => p.completed).map(p => p.id);
+    return {
+      id: t.id,
+      name: t.name,
+      participantTotal: ps.length,
+      participantCount: doneIds.length,
+      status: !doneIds.length ? 'empty' : doneIds.length < ps.length ? 'partial' : 'complete',
+      doneIds
+    };
+  });
+
+  const allDone = teams.flatMap(t => t.doneIds);
+  if (!allDone.length) return { error: 'Geen afgeronde deelnemers om een rapport van te genereren.', status: 400 };
+
+  const incomplete = teams.filter(t => t.status !== 'complete');
+  if (incomplete.length && !confirmIncomplete) {
+    return {
+      error: 'Niet alle teams zijn volledig ingevuld.',
+      status: 409,
+      incompleteTeams: incomplete.map(t => ({
+        name: t.name, participantTotal: t.participantTotal, participantCount: t.participantCount
+      }))
+    };
+  }
+
+  const ctx = await loadReportContext();
+  const answerMap = await answersByParticipant(allDone);
+  const scores = computeScores(ctx.questions, allDone.map(id => answerMap[id]));
+  if (!Object.keys(scores.tAvgs).length) {
+    return { error: 'Er zijn nog geen antwoorden om een rapport van te maken.', status: 400 };
+  }
+
+  const report = {
+    id: 'org_' + orgId,
+    type: 'organisation',
+    orgId: orgId,
+    isIndividual: false,
+    qScores: scores.qScores,
+    qIndividual: scores.qIndividual,
+    tAvgs: scores.tAvgs,
+    overall: scores.overall,
+    questions: ctx.questions,
+    dimensions: ctx.dimensions,
+    aiAdvice: {},
+    generatedAt: new Date().toISOString(),
+    participantCount: allDone.length,
+    participantTotal: pRes.rows.length,
+    teams: teams.map(t => {
+      const teamScores = computeScores(ctx.questions, t.doneIds.map(id => answerMap[id]));
+      return {
+        id: t.id,
+        name: t.name,
+        participantTotal: t.participantTotal,
+        participantCount: t.participantCount,
+        status: t.status,
+        tAvgs: teamScores.tAvgs,
+        overall: teamScores.overall
+      };
+    })
+  };
+
+  await saveReport(report);
+  return { report };
+}
+
 // Fired after a participant completes. Never overwrites an existing report, so
 // advice an admin has edited stays intact.
 async function autoGenerateReports(participantId) {
@@ -1365,16 +1545,23 @@ app.get('/api/admin/reports', adminAuth, async (req, res) => {
 
 app.post('/api/admin/reports/generate', adminAuth, async (req, res) => {
   try {
-    const { type, teamId, participantId } = req.body || {};
+    const { type, teamId, participantId, orgId, confirmIncomplete } = req.body || {};
     let result;
     if (type === 'individual') {
       if (!participantId) return res.status(400).json({ error: 'participantId ontbreekt' });
       result = await generateIndividualReport(participantId);
+    } else if (type === 'organisation') {
+      if (!orgId) return res.status(400).json({ error: 'orgId ontbreekt' });
+      result = await generateOrgReport(orgId, confirmIncomplete === true);
     } else {
       if (!teamId) return res.status(400).json({ error: 'teamId ontbreekt' });
       result = await generateTeamReport(teamId);
     }
-    if (result.error) return res.status(result.status || 400).json({ error: result.error });
+    if (result.error) {
+      const body = { error: result.error };
+      if (result.incompleteTeams) body.incompleteTeams = result.incompleteTeams;
+      return res.status(result.status || 400).json(body);
+    }
     res.json({ report: result.report, aiWarning: result.aiWarning || null });
   } catch (e) {
     fail(res, 500, 'Rapport genereren is mislukt.', e);
@@ -1487,7 +1674,11 @@ app.post('/api/admin/shared-reports', adminAuth, async (req, res) => {
     const report = stored.rows[0].data || {};
 
     let orgName = '', teamName = '';
-    if (report.teamId) {
+    if (report.type === 'organisation') {
+      const o = await pool.query('SELECT name FROM organisations WHERE id = $1', [report.orgId]);
+      if (o.rows.length) orgName = o.rows[0].name;
+      teamName = 'Organisatierapport';
+    } else if (report.teamId) {
       const t = await pool.query(
         'SELECT t.name, o.name AS org_name FROM teams t JOIN organisations o ON t.org_id = o.id WHERE t.id = $1',
         [report.teamId]
