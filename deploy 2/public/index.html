@@ -1627,11 +1627,11 @@ function renderTeamPage(org,team){
     menu.push({label:'Deelnemer verwijderen',action:'deleteParticipant',data:{pid:p.id,pname:pEnc},del:true});
     return '<tr>'+
       '<td class="cell-name">'+esc(pName)+'</td>'+
-      '<td>'+linkBtn+'</td>'+
       '<td>'+badge+'</td>'+
       '<td>'+(p.completedAt?fmtDate(p.completedAt):'<span class="muted">—</span>')+'</td>'+
       '<td>'+reportStatusHtml(pReport?'ok':'blocked',pReport)+'</td>'+
       '<td>'+repBtn+'</td>'+
+      '<td>'+linkBtn+'</td>'+
       '<td class="act"><div class="act-row">'+rowMenu(menu)+'</div></td></tr>';
   }).join('');
 
@@ -1643,7 +1643,7 @@ function renderTeamPage(org,team){
     banner+
     (ps.length?
       '<div class="orgs-tabs">'+tabs+'</div>'+
-      '<div class="orgs-table"><table><thead><tr><th>Naam</th><th>Deelnamelink</th><th>Status</th><th>Afgerond op</th><th>Gegenereerd op</th><th>Individueel rapport</th><th></th></tr></thead><tbody>'+
+      '<div class="orgs-table"><table><thead><tr><th>Naam</th><th>Status</th><th>Afgerond op</th><th>Gegenereerd op</th><th>Individueel rapport</th><th>Deelnamelink</th><th></th></tr></thead><tbody>'+
       (rows||'<tr><td colspan="7" class="muted">Geen deelnemers met deze status.</td></tr>')+
       '</tbody></table></div>'+
       '<button type="button" class="orgs-add" data-action="addParticipant" data-team="'+team.id+'">+ Deelnemer toevoegen</button>':'');
